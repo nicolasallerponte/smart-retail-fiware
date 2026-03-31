@@ -1,44 +1,39 @@
-version: '3.7'
+version: '3.8'
 
 services:
-  mongo:
-    image: mongo:4.4
-    container_name: fiware-mongo
-    command: ["--replSet", "rs0", "--bind_ip_all"]
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "rs.status()"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   orion:
     image: fiware/orion:3.2.0
-    container_name: fiware-orion
-    depends_on:
-      mongo:
-        condition: service_healthy
     ports:
       - "1026:1026"
+    depends_on:
+      - mongo
     environment:
-      - MONGO_HOST=mongo
-      - MONGO_PORT=27017
-      - CONTEXT_BROKER_HOST=orion
-      - ORION_LOG_LEVEL=INFO
-    command: ["-dbhost", "mongo"]
+      - ORION_MONGO_HOST=mongo
+      - ORION_MONGO_PORT=27017
+      - ORION_MONGO_DB=openiot
+    command: -dbhost mongo -logLevel INFO
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1026/version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mongo:
+    image: mongo:4.4
+    ports:
+      - "27017:27017"
+    command: --replSet rs0 --bind_ip_all
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   context-provider:
-    image: fiware/tutorials-ngsiv2-subscription:latest
-    container_name: fiware-context-provider
+    image: fiware/tutorials.context-provider
+    ports:
+      - "3001:3000"
     depends_on:
       - orion
     environment:
-      - TZ=UTC
-    ports:
-      - "8000:8000"
-
-volumes:
-  mongo_data:
+      - ORION_URL=http://orion:1026
