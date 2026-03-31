@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title or 'Smart Retail FIWARE' }}</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <script defer src="/static/js/app.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+<header class="navbar">
+    <div class="navbar-left">
+        <a href="/" class="nav-logo">Smart Retail FIWARE</a>
+        <a href="/products" class="nav-link">Products</a>
+        <a href="/stores" class="nav-link">Stores</a>
+        <a href="/employees" class="nav-link">Employees</a>
+    </div>
+    <div class="navbar-right">
+        <label class="toggleswitch">🌙
+            <input type="checkbox" id="theme-toggle" />
+            <span class="slider"></span>
+        </label>
+        <select id="lang-selector">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+        </select>
+    </div>
+</header>
+<main class="content">{% block content %}{% endblock %}</main>
+<footer class="footer">© 2026 Smart Retail FIWARE</footer>
+</body>
+</html>

@@ -1,5 +1,12 @@
 # System Architecture Document
 
+## 0. Implementation Status
+
+- [x] Base architecture documented
+- [x] Flask application and blueprints implemented in `feature/app-base`
+- [x] Orion integration client and subscriptions basics implemented
+- [x] Initial data load script implemented
+
 ## 1. System Overview
 
 The FIWARE Inventory Management System consists of multiple interconnected components:

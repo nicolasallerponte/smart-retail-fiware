@@ -1,5 +1,12 @@
 # Data Model Document
 
+## 0. Implementation Status
+
+- [x] Entity definitions and relationships documented
+- [x] Employee.refStore relationship added
+- [x] NGSIv2 URN-based IDs applied
+- [x] Model classes created with to_ngsi() methods
+
 ## 1. UML Entity Diagram
 
 ```mermaid
