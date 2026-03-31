@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<section>
+  <h1>Welcome to Smart Retail FIWARE</h1>
+  <p>This application is implemented with Flask and FIWARE NGSIv2 for real-time inventory management.</p>
+  <div class="card-grid">
+    <div class="card"><a href="/products">Products</a></div>
+    <div class="card"><a href="/stores">Stores</a></div>
+    <div class="card"><a href="/employees">Employees</a></div>
+  </div>
+  <div class="uml">
+    <h2>UML Entity Diagram</h2>
+    <pre>
+Store 1&lt;-->* Shelf
+Store 1&lt;-->* InventoryItem
+Product 1&lt;-->* InventoryItem
+Employee works_in Store
+    </pre>
+  </div>
+</section>
+{% endblock %}

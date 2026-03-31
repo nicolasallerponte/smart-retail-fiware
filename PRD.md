@@ -1,5 +1,12 @@
 # Product Requirements Document (PRD)
 
+## 0. Implementation Status
+
+- [x] Base app architecture and requirements documented
+- [x] Feature branch `feature/app-base` created
+- [x] Flask app structure implemented with entity blueprints
+- [x] Initial data script created and ready to run
+
 ## 1. Overview
 
 **Application Name:** FIWARE Inventory Management System (Practice 2)
