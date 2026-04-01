@@ -31,14 +31,14 @@ services:
     command: ["-dbhost", "mongo"]
 
   context-provider:
-    image: fiware/tutorials-ngsiv2-subscription:latest
+    image: fiware/tutorials.context-provider:latest
     container_name: fiware-context-provider
     depends_on:
       - orion
     environment:
       - TZ=UTC
     ports:
-      - "8000:8000"
+      - "3001:3000"
 
 volumes:
   mongo_data:
