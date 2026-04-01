@@ -11,16 +11,18 @@ from api.shelves import shelves_bp
 from api.inventoryitems import inventoryitems_bp
 from orion_client import OrionClient
 
+socketio = SocketIO()
+
 
 def create_app():
     app = Flask(__name__, static_folder='static', template_folder='templates')
     app.config.from_mapping(
-        ORION_URL=os.getenv('ORION_URL', 'http://host.docker.internal:1026'),
+        ORION_URL=os.getenv('ORION_URL', 'http://localhost:1026'),
     )
 
     CORS(app)
 
-    socketio = SocketIO(app, cors_allowed_origins="*")
+    socketio.init_app(app, cors_allowed_origins="*")
 
     app.orion = OrionClient(app.config['ORION_URL'])
 
@@ -33,7 +35,7 @@ def create_app():
         if "Temperature and Humidity Provider" not in existing_descriptions:
             app.orion.register_provider({
                 "description": "Temperature and Humidity Provider",
-                "dataProviderURL": "http://host.docker.internal:3001",
+                "dataProviderURL": "http://localhost:3001",
                 "entities": [{"type": "Store", "isPattern": True}],
                 "attrs": ["temperature", "relativeHumidity"]
             })
@@ -41,7 +43,7 @@ def create_app():
         if "Tweets Provider" not in existing_descriptions:
             app.orion.register_provider({
                 "description": "Tweets Provider",
-                "dataProviderURL": "http://host.docker.internal:3001",
+                "dataProviderURL": "http://localhost:3001",
                 "entities": [{"type": "Store", "isPattern": True}],
                 "attrs": ["tweets"]
             })
