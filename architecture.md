@@ -6,6 +6,9 @@
 - [x] Flask application and blueprints implemented in `feature/app-base`
 - [x] Orion integration client and subscriptions basics implemented
 - [x] Initial data load script implemented
+- [x] Real-time notifications implemented with Flask-SocketIO
+- [x] Context provider registrations on startup
+- [x] Orion subscriptions for price changes and low stock
 
 ## 1. System Overview
 

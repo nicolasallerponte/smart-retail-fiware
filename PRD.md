@@ -6,6 +6,9 @@
 - [x] Feature branch `feature/app-base` created
 - [x] Flask app structure implemented with entity blueprints
 - [x] Initial data script created and ready to run
+- [x] Real-time notifications implemented with Socket.IO
+- [x] Context providers registered on startup
+- [x] Orion subscriptions for price changes and low stock alerts
 
 ## 1. Overview
 
@@ -147,12 +150,12 @@
 - Notification panel shows "Price changed: [Product] is now €X.XX" with timestamp
 
 **Acceptance Criteria:**
-- [ ] Price changes in Orion trigger subscription
-- [ ] Backend receives notification from Orion
-- [ ] Notification is forwarded via Socket.IO to all clients
-- [ ] Price updates in product list view
-- [ ] Price updates in all store inventory detail views
-- [ ] Notification appears in notifications panel with timestamp
+- [x] Price changes in Orion trigger subscription
+- [x] Backend receives notification from Orion
+- [x] Notification is forwarded via Socket.IO to all clients
+- [x] Price updates in product list view
+- [x] Price updates in all store inventory detail views
+- [x] Notification appears in notifications panel with timestamp
 
 ---
 
@@ -167,11 +170,11 @@
 - Notification panel shows "Low stock alert: [Product] @ [Store] ([Count] units)" with timestamp
 
 **Acceptance Criteria:**
-- [ ] Low stock condition triggers Orion subscription
-- [ ] Backend receives notification from Orion
-- [ ] Notification is forwarded via Socket.IO to all clients
-- [ ] Stock count updates in affected store's inventory table
-- [ ] Notification appears in notifications panel with timestamp
+- [x] Low stock condition triggers Orion subscription
+- [x] Backend receives notification from Orion
+- [x] Notification is forwarded via Socket.IO to all clients
+- [x] Stock count updates in affected store's inventory table
+- [x] Notification appears in notifications panel with timestamp
 
 ---
 
@@ -194,7 +197,7 @@
 - Color coding: Blue (cold), Green (optimal), Red (hot)
 
 **Acceptance Criteria:**
-- [ ] Context provider is registered with Orion on app startup
+- [x] Context provider is registered with Orion on app startup
 - [ ] Temperature and humidity are fetched from Orion for all stores
 - [ ] Values display with appropriate color coding
 - [ ] Icons use Font Awesome (e.g., thermometer, droplet)
@@ -214,7 +217,7 @@
 - Displayed after inventory table with X/Twitter icon
 
 **Acceptance Criteria:**
-- [ ] Tweets context provider is registered with Orion on app startup
+- [x] Tweets context provider is registered with Orion on app startup
 - [ ] Tweets are fetched and displayed in store detail page
 - [ ] X/Twitter icon is displayed with tweets
 
