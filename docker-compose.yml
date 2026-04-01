@@ -10,7 +10,7 @@ services:
     volumes:
       - mongo_data:/data/db
     healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "echo", "ok"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,11 +24,11 @@ services:
     ports:
       - "1026:1026"
     environment:
-      - MONGO_HOST=mongo
+      - MONGO_HOST=fiware-mongo-p2
       - MONGO_PORT=27017
       - CONTEXT_BROKER_HOST=orion
       - ORION_LOG_LEVEL=INFO
-    command: ["-dbhost", "mongo"]
+    command: ["-dbhost", "fiware-mongo-p2"]
 
   context-provider:
     image: fiware/tutorials.context-provider:latest
