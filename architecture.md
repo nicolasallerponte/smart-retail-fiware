@@ -9,6 +9,7 @@
 - [x] Real-time notifications implemented with Flask-SocketIO
 - [x] Context provider registrations on startup
 - [x] Orion subscriptions for price changes and low stock
+- [x] Store detail view with Leaflet map, Three.js 3D tour, inventory management
 
 ## 1. System Overview
 

@@ -77,15 +77,15 @@
 - Real-time notifications panel showing incoming alerts
 
 **Acceptance Criteria:**
-- [ ] Store list displays all stores with correct attributes
-- [ ] Store detail page loads with map and 3D tour
-- [ ] Inventory items are correctly grouped by shelf
-- [ ] Fill level progress bar color changes based on capacity (e.g., red <25%, yellow 25-75%, green >75%)
-- [ ] External context providers (temperature, humidity, tweets) display correctly
-- [ ] Add Shelf button creates new shelf in database
-- [ ] Add Product button shows only products not yet on that shelf
-- [ ] Buy One button correctly decrements stock via Orion PATCH request
-- [ ] Real-time notifications appear when price changes or stock drops
+- [x] Store list displays all stores with correct attributes
+- [x] Store detail page loads with map and 3D tour
+- [x] Inventory items are correctly grouped by shelf
+- [x] Fill level progress bar color changes based on capacity (e.g., red <25%, yellow 25-75%, green >75%)
+- [x] External context providers (temperature, humidity, tweets) display correctly
+- [x] Add Shelf button creates new shelf in database
+- [x] Add Product button shows only products not yet on that shelf
+- [x] Buy One button correctly decrements stock via Orion PATCH request
+- [x] Real-time notifications appear when price changes or stock drops
 
 ---
 
