@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<section>
+  <h1>Store Detail</h1>
+  <div id="store-info">
+    <img id="store-image" src="" alt="Store" class="warehouse-photo" />
+    <h2 id="store-name"></h2>
+    <p id="store-description"></p>
+    <div id="temp-humidity">
+      <span id="temperature"><i class="fas fa-thermometer-half"></i> --°C</span>
+      <span id="humidity"><i class="fas fa-tint"></i> --%</span>
+    </div>
+  </div>
+  
+  <div id="map" style="height: 400px;"></div>
+  
+  <div id="3d-tour" style="height: 400px;"></div>
+  
+  <button id="add-shelf-btn">Add New Shelf</button>
+  
+  <div id="inventory">
+    <h3>Inventory</h3>
+    <div id="inventory-content"></div>
+  </div>
+  
+  <div id="tweets">
+    <h3><i class="fab fa-twitter"></i> Latest Tweets</h3>
+    <div id="tweets-content"></div>
+  </div>
+  
+  <div id="notifications-panel">
+    <h3>Notifications</h3>
+    <ul id="notifications-list"></ul>
+  </div>
+</section>
+{% endblock %}

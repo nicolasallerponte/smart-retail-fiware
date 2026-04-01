@@ -101,6 +101,10 @@ def create_app():
     def stores_page():
         return render_template('stores.html')
 
+    @app.route('/stores/<store_id>')
+    def store_detail(store_id):
+        return render_template('store_detail.html', store_id=store_id)
+
     @app.route('/employees')
     def employees_page():
         return render_template('employees.html')

@@ -50,6 +50,250 @@ document.addEventListener('DOMContentLoaded', () => {
         showNotification(`Low stock alert: Product ${data.productId} in Store ${data.storeId} has ${data.stockCount} units`);
     });
 
+    // Page-specific logic
+    if (window.location.pathname === '/stores') {
+        loadStores();
+    } else if (window.location.pathname.startsWith('/stores/')) {
+        const storeId = window.location.pathname.split('/')[2];
+        loadStoreDetail(storeId);
+    }
+
+    async function loadStores() {
+        try {
+            const response = await fetch('/api/stores');
+            const stores = await response.json();
+            const tbody = document.getElementById('stores-tbody');
+            tbody.innerHTML = '';
+            stores.forEach(store => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><img src="${store.image.value}" alt="${store.name.value}" width="50"></td>
+                    <td><a href="/stores/${store.id.split(':')[2]}">${store.name.value}</a></td>
+                    <td><i class="fi fi-${store.countryCode.value.toLowerCase()}"></i> ${store.countryCode.value}</td>
+                    <td class="temp">${store.temperature ? store.temperature.value + '°C' : 'N/A'}</td>
+                    <td class="humidity">${store.relativeHumidity ? store.relativeHumidity.value + '%' : 'N/A'}</td>
+                    <td>
+                        <button onclick="editStore('${store.id}')">Edit</button>
+                        <button onclick="deleteStore('${store.id}')">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+                // Color temp/humidity
+                const tempEl = row.querySelector('.temp');
+                const humEl = row.querySelector('.humidity');
+                if (store.temperature) {
+                    const temp = store.temperature.value;
+                    if (temp < 15) tempEl.style.color = 'blue';
+                    else if (temp <= 25) tempEl.style.color = 'green';
+                    else tempEl.style.color = 'red';
+                }
+                if (store.relativeHumidity) {
+                    const hum = store.relativeHumidity.value;
+                    if (hum < 40) humEl.style.color = 'blue';
+                    else if (hum <= 60) humEl.style.color = 'green';
+                    else humEl.style.color = 'red';
+                }
+            });
+        } catch (err) {
+            console.error('Error loading stores:', err);
+        }
+    }
+
+    // Placeholder functions for edit/delete
+    function editStore(id) { alert('Edit not implemented'); }
+    function deleteStore(id) { alert('Delete not implemented'); }
+
+    async function loadStoreDetail(storeId) {
+        try {
+            const storeRes = await fetch(`/api/stores/${storeId}`);
+            const store = await storeRes.json();
+            document.getElementById('store-image').src = store.image.value;
+            document.getElementById('store-name').textContent = store.name.value;
+            document.getElementById('store-description').textContent = store.description.value;
+            if (store.temperature) {
+                document.getElementById('temperature').innerHTML = `<i class="fas fa-thermometer-half"></i> ${store.temperature.value}°C`;
+                document.getElementById('temperature').style.color = store.temperature.value < 15 ? 'blue' : store.temperature.value <= 25 ? 'green' : 'red';
+            }
+            if (store.relativeHumidity) {
+                document.getElementById('humidity').innerHTML = `<i class="fas fa-tint"></i> ${store.relativeHumidity.value}%`;
+                document.getElementById('humidity').style.color = store.relativeHumidity.value < 40 ? 'blue' : store.relativeHumidity.value <= 60 ? 'green' : 'red';
+            }
+            if (store.tweets) {
+                document.getElementById('tweets-content').innerHTML = store.tweets.value.map(tweet => `<p>${tweet}</p>`).join('');
+            }
+            initMap(store.address ? store.address.value : 'Unknown');
+            init3D(storeId);
+            loadInventory(storeId);
+            // Add shelf button
+            document.getElementById('add-shelf-btn').onclick = () => {
+                const name = prompt('Shelf name:');
+                const level = prompt('Level:');
+                if (name && level) {
+                    fetch('/api/shelves', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            storeId: `urn:ngsi-ld:Store:${storeId}`,
+                            name: name,
+                            level: parseInt(level),
+                            image: 'https://example.com/shelf.jpg'
+                        })
+                    }).then(() => location.reload());
+                }
+            };
+        } catch (err) {
+            console.error('Error loading store detail:', err);
+        }
+    }
+
+    async function initMap(address) {
+        let lat = 0, lng = 0;
+        try {
+            const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+            const geo = await geoRes.json();
+            if (geo.length > 0) {
+                lat = parseFloat(geo[0].lat);
+                lng = parseFloat(geo[0].lon);
+            } else {
+                alert('Geocoding failed, showing default location');
+            }
+        } catch (err) {
+            console.error('Geocoding error:', err);
+            alert('Geocoding failed, showing default location');
+        }
+        const map = L.map('map').setView([lat, lng], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        L.marker([lat, lng]).addTo(map).bindPopup(address).openPopup();
+    }
+
+    function init3D(storeId) {
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, 400 / 400, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(400, 400);
+        document.getElementById('3d-tour').appendChild(renderer.domElement);
+        const light = new THREE.AmbientLight(0x404040);
+        scene.add(light);
+        camera.position.z = 5;
+        fetch(`/api/shelves?storeId=urn:ngsi-ld:Store:${storeId}`).then(r => r.json()).then(shelves => {
+            shelves.forEach((shelf, i) => {
+                const geometry = new THREE.BoxGeometry(1, 0.5, 0.5);
+                const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
+                const cube = new THREE.Mesh(geometry, material);
+                cube.position.set(i * 1.2 - 2, shelf.level.value * 0.6, 0);
+                scene.add(cube);
+                fetch(`/api/inventoryitems?shelfId=${shelf.id}`).then(r => r.json()).then(items => {
+                    items.forEach((item, j) => {
+                        const smallGeo = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+                        const smallMat = new THREE.MeshBasicMaterial({color: 0xff0000});
+                        const smallCube = new THREE.Mesh(smallGeo, smallMat);
+                        smallCube.position.set(i * 1.2 - 2 + j * 0.3, shelf.level.value * 0.6, 0);
+                        scene.add(smallCube);
+                    });
+                });
+            });
+        });
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+    }
+
+    async function loadInventory(storeId) {
+        try {
+            const invRes = await fetch(`/api/inventoryitems?storeId=urn:ngsi-ld:Store:${storeId}`);
+            const items = await invRes.json();
+            const byShelf = {};
+            items.forEach(item => {
+                const shelfId = item.shelfId.value;
+                if (!byShelf[shelfId]) byShelf[shelfId] = [];
+                byShelf[shelfId].push(item);
+            });
+            const content = document.getElementById('inventory-content');
+            content.innerHTML = '';
+            for (const shelfId in byShelf) {
+                const shelfItems = byShelf[shelfId];
+                const shelfRes = await fetch(`/api/shelves/${shelfId.split(':')[2]}`);
+                const shelf = await shelfRes.json();
+                const totalShelfCount = shelfItems.reduce((sum, item) => sum + item.shelfCount.value, 0);
+                const maxCapacity = 100;
+                const fillPercent = Math.min((totalShelfCount / maxCapacity) * 100, 100);
+                const color = fillPercent < 25 ? 'red' : fillPercent <= 75 ? 'yellow' : 'green';
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <h4>${shelf.name.value} <button onclick="editShelf('${shelfId}')">Edit</button> <button onclick="addProductToShelf('${shelfId}')">Add Product</button></h4>
+                    <div class="progress-bar"><div style="width: ${fillPercent}%; background: ${color}; height: 20px;"></div></div>
+                    <table>
+                        <thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Size</th><th>Color</th><th>Stock</th><th>Shelf</th><th>Action</th></tr></thead>
+                        <tbody>
+                `;
+                for (const item of shelfItems) {
+                    const prodRes = await fetch(`/api/products/${item.productId.value.split(':')[2]}`);
+                    const product = await prodRes.json();
+                    div.innerHTML += `
+                            <tr>
+                                <td><img src="${product.image.value}" width="30"></td>
+                                <td>${product.name.value}</td>
+                                <td class="price" data-product-id="${item.productId.value.split(':')[2]}">€${product.price.value}</td>
+                                <td>${product.size.value}</td>
+                                <td style="background: ${product.color.value}; width: 20px; height: 20px;"></td>
+                                <td class="stock-count" data-inventory-id="${item.id.split(':')[2]}">${item.stockCount.value}</td>
+                                <td>${item.shelfCount.value}</td>
+                                <td><button onclick="buyOne('${item.id}')">Buy One</button></td>
+                            </tr>
+                    `;
+                }
+                div.innerHTML += '</tbody></table></div>';
+                content.appendChild(div);
+            }
+        } catch (err) {
+            console.error('Error loading inventory:', err);
+        }
+    }
+
+    function editShelf(id) { alert('Edit shelf not implemented'); }
+
+    function addProductToShelf(shelfId) {
+        fetch('/api/products').then(r => r.json()).then(products => {
+            fetch(`/api/inventoryitems?shelfId=${shelfId}`).then(r => r.json()).then(items => {
+                const currentProductIds = items.map(item => item.productId.value);
+                const eligible = products.filter(p => !currentProductIds.includes(p.id));
+                const select = document.createElement('select');
+                eligible.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p.id;
+                    option.text = p.name.value;
+                    select.appendChild(option);
+                });
+                const btn = document.createElement('button');
+                btn.textContent = 'Add';
+                btn.onclick = () => {
+                    const productId = select.value;
+                    fetch('/api/inventoryitems', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            productId: productId,
+                            shelfId: shelfId,
+                            stockCount: 10,
+                            shelfCount: 5
+                        })
+                    }).then(() => location.reload());
+                };
+                document.body.appendChild(document.createTextNode('Select product: '));
+                document.body.appendChild(select);
+                document.body.appendChild(btn);
+            });
+        });
+    }
+
+    function buyOne(id) {
+        fetch(`/api/inventoryitems/${id.split(':')[2]}/buy`, {method: 'PATCH'}).then(() => location.reload());
+    }
+
     function updateProductPrice(productId, newPrice) {
         // Update price in all elements with data-product-id
         const priceElements = document.querySelectorAll(`[data-product-id="${productId}"] .price`);
@@ -73,8 +317,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showNotification(message) {
-        // Simple alert for now, can be enhanced with a notification panel
-        alert(message);
+        // Append to notifications panel if exists, else alert
+        const panel = document.getElementById('notifications-list');
+        if (panel) {
+            const li = document.createElement('li');
+            li.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            panel.appendChild(li);
+            // Keep only last 10
+            while (panel.children.length > 10) {
+                panel.removeChild(panel.firstChild);
+            }
+        } else {
+            alert(message);
+        }
     }
 
     // If in list pages, show API status
