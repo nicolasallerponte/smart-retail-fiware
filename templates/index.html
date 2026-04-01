@@ -10,12 +10,66 @@
   </div>
   <div class="uml">
     <h2>UML Entity Diagram</h2>
-    <pre>
-Store 1&lt;-->* Shelf
-Store 1&lt;-->* InventoryItem
-Product 1&lt;-->* InventoryItem
-Employee works_in Store
-    </pre>
+    <div class="mermaid">
+erDiagram
+    EMPLOYEE ||--|| STORE : works_in
+    EMPLOYEE ||--o{ INVENTORY_ITEM : manages
+    STORE ||--o{ SHELF : contains
+    STORE ||--o{ INVENTORY_ITEM : stores
+    PRODUCT ||--o{ INVENTORY_ITEM : "placed on"
+    SHELF ||--o{ INVENTORY_ITEM : holds
+
+    EMPLOYEE {
+        string id PK
+        string name
+        string email
+        string dateOfContract
+        string[] skills
+        string username
+        string password
+        string category
+        string refStore FK
+    }
+
+    STORE {
+        string id PK
+        string name
+        string url
+        string telephone
+        string countryCode
+        string capacity
+        decimal temperature
+        decimal relativeHumidity
+        string[] tweets
+        string address
+    }
+
+    PRODUCT {
+        string id PK
+        string name
+        decimal price
+        string size
+        string color
+        string image
+    }
+
+    SHELF {
+        string id PK
+        string storeId FK
+        string name
+        integer level
+        string image
+    }
+
+    INVENTORY_ITEM {
+        string id PK
+        string productId FK
+        string shelfId FK
+        string storeId FK
+        integer stockCount
+        integer shelfCount
+    }
+    </div>
   </div>
 </section>
 {% endblock %}
