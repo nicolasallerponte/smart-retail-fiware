@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
         L.marker([lat, lng]).addTo(map).bindPopup(address).openPopup();
     }
 
-    function init3D(storeId) {
+    function init3D(fullStoreId) {
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, 400 / 400, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer();
@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const light = new THREE.AmbientLight(0x404040);
         scene.add(light);
         camera.position.z = 5;
-        fetch(`/api/shelves?storeId=urn:ngsi-ld:Store:${storeId}`).then(r => r.json()).then(shelves => {
+        fetch(`/api/shelves?storeId=${fullStoreId}`).then(r => r.json()).then(shelves => {
             shelves.forEach((shelf, i) => {
                 const geometry = new THREE.BoxGeometry(1, 0.5, 0.5);
                 const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
@@ -202,9 +202,9 @@ document.addEventListener('DOMContentLoaded', () => {
         animate();
     }
 
-    async function loadInventory(storeId) {
+    async function loadInventory(fullStoreId) {
         try {
-            const invRes = await fetch(`/api/inventoryitems?storeId=urn:ngsi-ld:Store:${storeId}`);
+            const invRes = await fetch(`/api/inventoryitems?storeId=${fullStoreId}`);
             const items = await invRes.json();
             const byShelf = {};
             items.forEach(item => {
