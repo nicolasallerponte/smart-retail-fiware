@@ -1,6 +1,8 @@
 import os
-from flask import Flask, render_template
+import logging
+from flask import Flask, render_template, request
 from flask_cors import CORS
+from flask_socketio import SocketIO
 
 from api.products import products_bp
 from api.stores import stores_bp
@@ -18,7 +20,66 @@ def create_app():
 
     CORS(app)
 
+    socketio = SocketIO(app, cors_allowed_origins="*")
+
     app.orion = OrionClient(app.config['ORION_URL'])
+
+    # Register context providers and subscriptions
+    try:
+        # Register providers
+        registrations = app.orion.get_registrations()
+        existing_descriptions = [r.get('description') for r in registrations]
+        
+        if "Temperature and Humidity Provider" not in existing_descriptions:
+            app.orion.register_provider({
+                "description": "Temperature and Humidity Provider",
+                "dataProviderURL": "http://host.docker.internal:3001",
+                "entities": [{"type": "Store", "isPattern": True}],
+                "attrs": ["temperature", "relativeHumidity"]
+            })
+        
+        if "Tweets Provider" not in existing_descriptions:
+            app.orion.register_provider({
+                "description": "Tweets Provider",
+                "dataProviderURL": "http://host.docker.internal:3001",
+                "entities": [{"type": "Store", "isPattern": True}],
+                "attrs": ["tweets"]
+            })
+        
+        # Create subscriptions
+        subscriptions = app.orion.get_subscriptions()
+        existing_subs = [s.get('description') for s in subscriptions]
+        
+        if "Product Price Change Subscription" not in existing_subs:
+            app.orion.create_subscription({
+                "description": "Product Price Change Subscription",
+                "subject": {
+                    "entities": [{"type": "Product"}],
+                    "condition": {"attrs": ["price"]}
+                },
+                "notification": {
+                    "http": {"url": "http://host.docker.internal:5000/orion/notifications"},
+                    "attrs": ["price"]
+                }
+            })
+        
+        if "Low Stock Alert Subscription" not in existing_subs:
+            app.orion.create_subscription({
+                "description": "Low Stock Alert Subscription",
+                "subject": {
+                    "entities": [{"type": "InventoryItem"}],
+                    "condition": {
+                        "attrs": ["stockCount"],
+                        "expression": {"q": "stockCount<5"}
+                    }
+                },
+                "notification": {
+                    "http": {"url": "http://host.docker.internal:5000/orion/notifications"},
+                    "attrs": ["stockCount", "productId", "storeId"]
+                }
+            })
+    except Exception as e:
+        logging.warning(f"Failed to register providers/subscriptions: {e}")
 
     app.register_blueprint(products_bp, url_prefix='/api/products')
     app.register_blueprint(stores_bp, url_prefix='/api/stores')
@@ -42,9 +103,25 @@ def create_app():
     def employees_page():
         return render_template('employees.html')
 
+    @app.route('/orion/notifications', methods=['POST'])
+    def handle_notification():
+        data = request.get_json()
+        for entity in data.get('data', []):
+            entity_id = entity['id']
+            entity_type = entity['type']
+            if entity_type == 'Product':
+                price = entity.get('price', {}).get('value')
+                socketio.emit('price_change', {'productId': entity_id, 'newPrice': price})
+            elif entity_type == 'InventoryItem':
+                stock_count = entity.get('stockCount', {}).get('value')
+                product_id = entity.get('productId', {}).get('value')
+                store_id = entity.get('storeId', {}).get('value')
+                socketio.emit('low_stock', {'inventoryItemId': entity_id, 'stockCount': stock_count, 'productId': product_id, 'storeId': store_id})
+        return '', 200
+
     return app
 
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)

@@ -47,3 +47,18 @@ class OrionClient:
         response = requests.delete(self._url(f'/v2/subscriptions/{subscription_id}'), headers={'Fiware-Service': 'openiot', 'Fiware-ServicePath': '/'})
         response.raise_for_status()
         return {}
+
+    def get_subscriptions(self):
+        response = requests.get(self._url('/v2/subscriptions'), headers={'Fiware-Service': 'openiot', 'Fiware-ServicePath': '/'})
+        response.raise_for_status()
+        return response.json()
+
+    def register_provider(self, registration_payload):
+        response = requests.post(self._url('/v2/registrations'), json=registration_payload, headers={'Content-Type': 'application/json', 'Fiware-Service': 'openiot', 'Fiware-ServicePath': '/'})
+        response.raise_for_status()
+        return response.json()
+
+    def get_registrations(self):
+        response = requests.get(self._url('/v2/registrations'), headers={'Fiware-Service': 'openiot', 'Fiware-ServicePath': '/'})
+        response.raise_for_status()
+        return response.json()
