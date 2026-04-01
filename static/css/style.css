@@ -108,3 +108,27 @@ body {
 #theme-toggle:checked + .slider::before {
     transform: translateX(20px);
 }
+
+/* Store styles */
+#stores-table { width: 100%; border-collapse: collapse; }
+#stores-table th, #stores-table td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; }
+#stores-table img { border-radius: 4px; }
+.temp, .humidity { font-weight: bold; }
+
+#store-info { text-align: center; margin-bottom: 1rem; }
+#store-image { max-width: 200px; border-radius: 8px; }
+.warehouse-photo:hover { transform: scale(1.1) rotate(360deg); transition: transform 0.5s; }
+
+#map, #3d-tour { border: 1px solid #ccc; margin: 1rem 0; }
+
+#inventory table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+#inventory th, #inventory td { border: 1px solid #ccc; padding: 0.3rem; }
+#inventory img { border-radius: 4px; }
+
+.progress-bar { background: #ddd; height: 20px; margin: 0.5rem 0; }
+
+.low-stock { color: red; font-weight: bold; }
+
+#notifications-panel { position: fixed; top: 10px; right: 10px; background: var(--card); border: 1px solid #ccc; padding: 0.5rem; max-width: 300px; max-height: 200px; overflow-y: auto; }
+#notifications-list { list-style: none; padding: 0; }
+#notifications-list li { margin: 0.2rem 0; font-size: 0.9rem; }
