@@ -4,7 +4,7 @@ import time
 from orion_client import OrionClient
 from models import Store, Shelf, Product, Employee, InventoryItem
 
-ORION_URL = os.getenv('ORION_URL', 'http://host.docker.internal:1026')
+ORION_URL = os.getenv('ORION_URL', 'http://localhost:1026')
 
 STORES = [
     Store('urn:ngsi-ld:Store:store1', 'Central Warehouse', 'https://store1.local', '+34 912 345 678', 'ES', 5000, 'Main warehouse', 'https://via.placeholder.com/150', 'Calle Principal 123, Madrid'),
