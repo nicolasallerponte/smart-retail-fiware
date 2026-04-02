@@ -9,6 +9,10 @@
 - [x] Real-time notifications implemented with Socket.IO
 - [x] Context providers registered on startup
 - [x] Orion subscriptions for price changes and low stock alerts
+- [x] Store list and detail views implemented with maps and 3D tours
+- [x] Product list view with color squares and delete buttons
+- [x] Employee list view with icons and delete buttons
+- [x] Product detail view with inventory grouped by store/shelf and add-to-shelf functionality
 
 ## 1. Overview
 
@@ -41,9 +45,18 @@
 - Add button at top to create new product
 - Edit and delete functionality
 
+**Detail View:**
+- Display product details with inventory grouped by store then shelf
+- Show stock counts for each shelf
+- Add-to-shelf form with dynamic select showing only eligible shelves
+- Shelf names resolved from IDs
+
 **Acceptance Criteria:**
-- [ ] Products display correctly in a sortable/filterable table
-- [ ] Color is displayed as a Font Awesome colored square icon
+- [x] Products display correctly in a sortable/filterable table
+- [x] Color is displayed as a Font Awesome colored square icon
+- [x] Product detail page shows inventory grouped by store/shelf
+- [x] Add-to-shelf functionality with dynamic shelf selection
+- [x] Shelf names displayed instead of IDs
 - [ ] New products can be created with validation
 - [ ] Product details can be edited (except ID)
 - [ ] Products can be deleted with confirmation
@@ -103,10 +116,10 @@
 - Edit and delete functionality
 
 **Acceptance Criteria:**
-- [ ] Employees display correctly in a table
-- [ ] Category displays with appropriate Font Awesome icon
-- [ ] Skills display with icons per skill type
-- [ ] Employee photos zoom on hover with CSS transition
+- [x] Employees display correctly in a table
+- [x] Category displays with appropriate Font Awesome icon
+- [x] Skills display with icons per skill type
+- [x] Employee photos zoom on hover with CSS transition
 - [ ] New employees can be created with validation
 - [ ] Employee details can be edited
 - [ ] Employees can be deleted with confirmation

@@ -10,6 +10,9 @@
 - [x] Context provider registrations on startup
 - [x] Orion subscriptions for price changes and low stock
 - [x] Store detail view with Leaflet map, Three.js 3D tour, inventory management
+- [x] Product list view with color squares and delete buttons
+- [x] Employee list view with icons and delete buttons
+- [x] Product detail view with inventory grouped by store/shelf and add-to-shelf functionality
 
 ## 1. System Overview
 
@@ -202,13 +205,13 @@ index.html
 │   └── Dark/Light toggle
 ├── home.html (UML diagram, quick stats)
 ├── products/
-│   ├── list.html (product table)
-│   └── detail.html (product detail)
+│   ├── list.html (product table with color squares, delete buttons)
+│   └── detail.html (product detail with inventory by store/shelf, add-to-shelf)
 ├── stores/
 │   ├── list.html (store table)
 │   └── detail.html (store detail with map, 3D, inventory)
 ├── employees/
-│   └── list.html (employee table)
+│   └── list.html (employee table with icons, zoom hover)
 ├── stores-map.html (Leaflet map overview)
 └── notifications-panel.html (overlay with real-time alerts)
 ```
@@ -246,8 +249,23 @@ function handleNotification(data) {
 
 **Product List View:**
 - Fetch and render product table from `/api/products`
+- Display color as Font Awesome colored square icons
+- Include delete buttons for each product
 - Subscribe to price change notifications via Socket.IO
 - Update price dynamically when notification arrives
+
+**Product Detail View:**
+- Fetch product details and related inventory items
+- Group inventory by store then shelf with stock counts
+- Display shelf names (resolved from shelf IDs)
+- Dynamic shelf select for adding product to eligible shelves
+- Form submission creates new InventoryItem via API
+
+**Employee List View:**
+- Fetch and render employee table from `/api/employees`
+- Display category and skills with Font Awesome icons
+- Employee photos with CSS zoom transition on hover
+- Include delete buttons for each employee
 
 **Store Detail View:**
 - Leaflet map initialization with store coordinates
@@ -499,9 +517,9 @@ Post-Implementation
 origin/main (protected, only receives merges)
     ↑
     ├─ feature/base-app (merged after completion)
-    ├─ feature/product-management (merged)
     ├─ feature/store-management (merged)
     ├─ feature/notifications (merged)
+    ├─ fix-env-config (merged)
     └─ ... (each feature gets its own branch)
 
 Local branches deleted after merge to main.

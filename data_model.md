@@ -6,6 +6,10 @@
 - [x] Employee.refStore relationship added
 - [x] NGSIv2 URN-based IDs applied
 - [x] Model classes created with to_ngsi() methods
+- [x] Product list and detail views implemented
+- [x] Employee list view with icons implemented
+- [x] Inventory grouping by store/shelf in product detail
+- [x] Shelf name resolution from IDs
 
 ## 1. UML Entity Diagram
 
