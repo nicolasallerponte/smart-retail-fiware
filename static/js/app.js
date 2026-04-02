@@ -66,9 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
             tbody.innerHTML = '';
             stores.forEach(store => {
                 const row = document.createElement('tr');
+                const storeKey = store.id.split(':')[3] || store.id;
                 row.innerHTML = `
                     <td><img src="${store.image.value}" alt="${store.name.value}" width="50"></td>
-                    <td><a href="/stores/${store.id.split(':')[2]}">${store.name.value}</a></td>
+                    <td><a href="/stores/${storeKey}">${store.name.value}</a></td>
                     <td><i class="fi fi-${store.countryCode.value.toLowerCase()}"></i> ${store.countryCode.value}</td>
                     <td class="temp">${store.temperature ? store.temperature.value + '°C' : 'N/A'}</td>
                     <td class="humidity">${store.relativeHumidity ? store.relativeHumidity.value + '%' : 'N/A'}</td>
@@ -105,7 +106,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadStoreDetail(storeId) {
         try {
-            const storeRes = await fetch(`/api/stores/${storeId}`);
+            const entityId = `urn:ngsi-ld:Store:${storeId}`;
+            const storeRes = await fetch(`/api/stores/${encodeURIComponent(entityId)}`);
             const store = await storeRes.json();
             document.getElementById('store-image').src = store.image.value;
             document.getElementById('store-name').textContent = store.name.value;
@@ -168,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
         L.marker([lat, lng]).addTo(map).bindPopup(address).openPopup();
     }
 
-    function init3D(fullStoreId) {
+    function init3D(storeId) {
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, 400 / 400, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer();
@@ -177,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const light = new THREE.AmbientLight(0x404040);
         scene.add(light);
         camera.position.z = 5;
-        fetch(`/api/shelves?storeId=${fullStoreId}`).then(r => r.json()).then(shelves => {
+        fetch(`/api/shelves?storeId=urn:ngsi-ld:Store:${storeId}`).then(r => r.json()).then(shelves => {
             shelves.forEach((shelf, i) => {
                 const geometry = new THREE.BoxGeometry(1, 0.5, 0.5);
                 const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
@@ -202,9 +204,9 @@ document.addEventListener('DOMContentLoaded', () => {
         animate();
     }
 
-    async function loadInventory(fullStoreId) {
+    async function loadInventory(storeId) {
         try {
-            const invRes = await fetch(`/api/inventoryitems?storeId=${fullStoreId}`);
+            const invRes = await fetch(`/api/inventoryitems?storeId=urn:ngsi-ld:Store:${storeId}`);
             const items = await invRes.json();
             const byShelf = {};
             items.forEach(item => {
@@ -216,38 +218,97 @@ document.addEventListener('DOMContentLoaded', () => {
             content.innerHTML = '';
             for (const shelfId in byShelf) {
                 const shelfItems = byShelf[shelfId];
-                const shelfRes = await fetch(`/api/shelves/${shelfId.split(':')[2]}`);
+                const shelfKey = shelfId.split(':')[3] || shelfId.split(':')[2] || shelfId;
+                const shelfRes = await fetch(`/api/shelves/${encodeURIComponent(shelfKey)}`);
                 const shelf = await shelfRes.json();
                 const totalShelfCount = shelfItems.reduce((sum, item) => sum + item.shelfCount.value, 0);
                 const maxCapacity = 100;
                 const fillPercent = Math.min((totalShelfCount / maxCapacity) * 100, 100);
                 const color = fillPercent < 25 ? 'red' : fillPercent <= 75 ? 'yellow' : 'green';
                 const div = document.createElement('div');
-                div.innerHTML = `
-                    <h4>${shelf.name.value} <button onclick="editShelf('${shelfId}')">Edit</button> <button onclick="addProductToShelf('${shelfId}')">Add Product</button></h4>
-                    <div class="progress-bar"><div style="width: ${fillPercent}%; background: ${color}; height: 20px;"></div></div>
-                    <table>
-                        <thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Size</th><th>Color</th><th>Stock</th><th>Shelf</th><th>Action</th></tr></thead>
-                        <tbody>
-                `;
+                const title = document.createElement('h4');
+                title.innerHTML = `${shelf.name.value} <button onclick="editShelf('${shelfId}')">Edit</button> <button onclick="addProductToShelf('${shelfId}')">Add Product</button>`;
+                div.appendChild(title);
+
+                const progressWrapper = document.createElement('div');
+                progressWrapper.className = 'progress-bar';
+                const progressFill = document.createElement('div');
+                progressFill.style.width = `${fillPercent}%`;
+                progressFill.style.background = color;
+                progressFill.style.height = '20px';
+                progressWrapper.appendChild(progressFill);
+                div.appendChild(progressWrapper);
+
+                const table = document.createElement('table');
+                const thead = document.createElement('thead');
+                thead.innerHTML = '<tr><th>Image</th><th>Name</th><th>Price</th><th>Size</th><th>Color</th><th>Stock</th><th>Shelf</th><th>Action</th></tr>';
+                table.appendChild(thead);
+                const tbody = document.createElement('tbody');
+
                 for (const item of shelfItems) {
-                    const prodRes = await fetch(`/api/products/${item.productId.value.split(':')[2]}`);
+                    const prodKey = item.productId.value.split(':')[3] || item.productId.value.split(':')[2] || item.productId.value;
+                    const prodRes = await fetch(`/api/products/${encodeURIComponent(prodKey)}`);
                     const product = await prodRes.json();
-                    div.innerHTML += `
-                            <tr>
-                                <td><img src="${product.image.value}" width="30"></td>
-                                <td>${product.name.value}</td>
-                                <td class="price" data-product-id="${item.productId.value.split(':')[2]}">€${product.price.value}</td>
-                                <td>${product.size.value}</td>
-                                <td style="background: ${product.color.value}; width: 20px; height: 20px;"></td>
-                                <td class="stock-count" data-inventory-id="${item.id.split(':')[2]}">${item.stockCount.value}</td>
-                                <td>${item.shelfCount.value}</td>
-                                <td><button onclick="buyOne('${item.id}')">Buy One</button></td>
-                            </tr>
-                    `;
+                    const dataProductId = item.productId.value.split(':')[3] || item.productId.value.split(':')[2] || item.productId.value;
+                    const dataInventoryId = item.id.split(':')[3] || item.id.split(':')[2] || item.id;
+
+                    const row = document.createElement('tr');
+                    const imageCell = document.createElement('td');
+                    const img = document.createElement('img');
+                    img.src = product.image.value;
+                    img.width = 30;
+                    imageCell.appendChild(img);
+                    row.appendChild(imageCell);
+
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = product.name.value;
+                    row.appendChild(nameCell);
+
+                    const priceCell = document.createElement('td');
+                    priceCell.className = 'price';
+                    priceCell.dataset.productId = dataProductId;
+                    priceCell.textContent = `€${product.price.value}`;
+                    row.appendChild(priceCell);
+
+                    const sizeCell = document.createElement('td');
+                    sizeCell.textContent = product.size.value;
+                    row.appendChild(sizeCell);
+
+                    const colorCell = document.createElement('td');
+                    const colorBox = document.createElement('span');
+                    colorBox.className = 'color-box';
+                    colorBox.style.background = product.color.value;
+                    colorBox.style.display = 'inline-block';
+                    colorBox.style.width = '16px';
+                    colorBox.style.height = '16px';
+                    colorBox.style.border = '1px solid #000';
+                    colorCell.appendChild(colorBox);
+                    row.appendChild(colorCell);
+
+                    const stockCell = document.createElement('td');
+                    stockCell.className = 'stock-count';
+                    stockCell.dataset.inventoryId = dataInventoryId;
+                    stockCell.textContent = item.stockCount.value;
+                    row.appendChild(stockCell);
+
+                    const shelfCountCell = document.createElement('td');
+                    shelfCountCell.textContent = item.shelfCount.value;
+                    row.appendChild(shelfCountCell);
+
+                    const actionCell = document.createElement('td');
+                    const buyButton = document.createElement('button');
+                    buyButton.textContent = 'Buy One';
+                    buyButton.onclick = () => buyOne(item.id);
+                    actionCell.appendChild(buyButton);
+                    row.appendChild(actionCell);
+
+                    tbody.appendChild(row);
                 }
-                div.innerHTML += '</tbody></table></div>';
+
+                table.appendChild(tbody);
+                div.appendChild(table);
                 content.appendChild(div);
+
             }
         } catch (err) {
             console.error('Error loading inventory:', err);
@@ -291,12 +352,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function buyOne(id) {
-        fetch(`/api/inventoryitems/${id.split(':')[2]}/buy`, {method: 'PATCH'}).then(() => location.reload());
+        const invKey = id.split(':')[3] || id.split(':')[2] || id;
+        fetch(`/api/inventoryitems/${encodeURIComponent(invKey)}/buy`, {method: 'PATCH'}).then(() => location.reload());
     }
 
     function updateProductPrice(productId, newPrice) {
         // Update price in all elements with data-product-id
-        const priceElements = document.querySelectorAll(`[data-product-id="${productId}"] .price`);
+        const priceElements = document.querySelectorAll(`[data-product-id="${productId}"]`);
         priceElements.forEach(el => {
             el.textContent = `€${newPrice}`;
         });
@@ -304,7 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateInventoryStock(inventoryItemId, stockCount) {
         // Update stock count in inventory tables
-        const stockElements = document.querySelectorAll(`[data-inventory-id="${inventoryItemId}"] .stock-count`);
+        const stockElements = document.querySelectorAll(`[data-inventory-id="${inventoryItemId}"]`);
         stockElements.forEach(el => {
             el.textContent = stockCount;
             // Add low stock class if < 5

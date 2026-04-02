@@ -17,18 +17,26 @@ def create_product():
     current_app.orion.create_entity(payload)
     return jsonify({'status': 'created', 'id': entity_id}), 201
 
+def normalize_product_entity_id(entity_id):
+    if not entity_id.startswith('urn:ngsi-ld:'):
+        return f'urn:ngsi-ld:Product:{entity_id}'
+    return entity_id
+
 @products_bp.route('/<entity_id>', methods=['GET'])
 def get_product(entity_id):
+    entity_id = normalize_product_entity_id(entity_id)
     product = current_app.orion.get_entity(entity_id)
     return jsonify(product)
 
 @products_bp.route('/<entity_id>', methods=['PATCH'])
 def update_product(entity_id):
+    entity_id = normalize_product_entity_id(entity_id)
     attrs = request.get_json() or {}
     current_app.orion.update_entity(entity_id, attrs)
     return jsonify({'status': 'updated'})
 
 @products_bp.route('/<entity_id>', methods=['DELETE'])
 def delete_product(entity_id):
+    entity_id = normalize_product_entity_id(entity_id)
     current_app.orion.delete_entity(entity_id)
     return jsonify({'status': 'deleted'})

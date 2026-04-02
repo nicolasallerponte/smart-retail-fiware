@@ -17,13 +17,20 @@ def create_store():
     current_app.orion.create_entity(payload)
     return jsonify({'status': 'created', 'id': entity_id}), 201
 
+def normalize_store_entity_id(entity_id):
+    if not entity_id.startswith('urn:ngsi-ld:'):
+        return f'urn:ngsi-ld:Store:{entity_id}'
+    return entity_id
+
 @stores_bp.route('/<entity_id>', methods=['GET'])
 def get_store(entity_id):
+    entity_id = normalize_store_entity_id(entity_id)
     store = current_app.orion.get_entity(entity_id)
     return jsonify(store)
 
 @stores_bp.route('/<entity_id>', methods=['PATCH'])
 def update_store(entity_id):
+    entity_id = normalize_store_entity_id(entity_id)
     attrs = request.get_json() or {}
     current_app.orion.update_entity(entity_id, attrs)
     return jsonify({'status': 'updated'})
