@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<section>
+  <h1>Product Detail</h1>
+  <div id="product-detail-header">
+    <img id="product-image" src="" alt="Product" style="max-width:150px;" />
+    <h2 id="product-name"></h2>
+    <p id="product-size"></p>
+    <p id="product-price"></p>
+    <div id="product-color"></div>
+  </div>
+
+  <div id="product-inventory-add" style="margin:0.8rem 0;">
+    <label for="shelf-select">Add to existing store shelf:</label>
+    <select id="shelf-select"></select>
+    <input id="add-stock-count" type="number" min="1" value="10" style="width:80px;" />
+    <button id="add-product-to-shelf">Add</button>
+  </div>
+
+  <div id="product-inventory">
+    <h3>Inventory by Store / Shelf</h3>
+    <div id="inventory-by-store"></div>
+  </div>
+</section>
+{% endblock %}

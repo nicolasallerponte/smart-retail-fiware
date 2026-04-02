@@ -51,11 +51,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Page-specific logic
-    if (window.location.pathname === '/stores') {
+    const pathname = window.location.pathname;
+    if (pathname === '/stores') {
         loadStores();
-    } else if (window.location.pathname.startsWith('/stores/')) {
-        const storeId = window.location.pathname.split('/')[2];
+    } else if (pathname.startsWith('/stores/')) {
+        const storeId = pathname.split('/')[2];
         loadStoreDetail(storeId);
+    } else if (pathname === '/products') {
+        loadProducts();
+    } else if (pathname.startsWith('/products/')) {
+        const productId = pathname.split('/')[2];
+        loadProductDetail(productId);
+    } else if (pathname === '/employees') {
+        loadEmployees();
     }
 
     async function loadStores() {
@@ -97,6 +105,229 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } catch (err) {
             console.error('Error loading stores:', err);
+        }
+    }
+
+    async function loadProducts() {
+        try {
+            const response = await fetch('/api/products');
+            const products = await response.json();
+            const tbody = document.getElementById('products-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            products.forEach(product => {
+                const row = document.createElement('tr');
+                const productKey = product.id.split(':')[3] || product.id;
+                row.innerHTML = `
+                    <td><img src="${product.image.value}" width="50" alt="${product.name.value}" /></td>
+                    <td><a href="/products/${productKey}">${product.name.value}</a></td>
+                    <td>€${product.price.value}</td>
+                    <td>${product.size.value}</td>
+                    <td><span class="color-box" style="background:${product.color.value}; width: 16px; height: 16px; display:inline-block; border: 1px solid #000;"></span></td>
+                    <td>
+                        <button onclick="alert('Not implemented')">Edit</button>
+                        <button onclick="deleteProduct('${product.id}')">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        } catch (err) {
+            console.error('Error loading products:', err);
+        }
+    }
+
+    async function loadEmployees() {
+        try {
+            const employees = await fetch('/api/employees').then(r => r.json());
+            const stores = await fetch('/api/stores').then(r => r.json());
+            const storeMap = {};
+            stores.forEach(s => { storeMap[s.id] = s.name.value; });
+
+            const tbody = document.getElementById('employees-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const categoryIcon = (cat) => {
+                if (!cat) return 'fas fa-user';
+                if (cat.toLowerCase().includes('manager')) return 'fas fa-user-tie';
+                if (cat.toLowerCase().includes('supervisor')) return 'fas fa-user-shield';
+                if (cat.toLowerCase().includes('operator')) return 'fas fa-hard-hat';
+                return 'fas fa-user';
+            };
+
+            const skillIcon = (skill) => {
+                if (!skill) return 'fas fa-star';
+                if (skill.toLowerCase().includes('machinery')) return 'fas fa-cogs';
+                if (skill.toLowerCase().includes('writing')) return 'fas fa-file-alt';
+                if (skill.toLowerCase().includes('customer')) return 'fas fa-handshake';
+                return 'fas fa-star';
+            };
+
+            employees.forEach(emp => {
+                const row = document.createElement('tr');
+                const name = emp.name ? emp.name.value : 'Unknown';
+                const category = emp.category ? emp.category.value : 'Unknown';
+                const skills = (emp.skills && Array.isArray(emp.skills.value)) ? emp.skills.value : [];
+                const photo = emp.image && emp.image.value ? emp.image.value : 'https://via.placeholder.com/50';
+                const storeName = emp.refStore && emp.refStore.value ? (storeMap[emp.refStore.value] || emp.refStore.value) : 'N/A';
+                const skillHtml = skills.map(s => `<i class="${skillIcon(s)}" title="${s}" style="margin-right:4px"></i>`).join('');
+
+                row.innerHTML = `
+                    <td><img class="employee-img" src="${photo}" alt="${name}" width="50" height="50"></td>
+                    <td>${name}</td>
+                    <td><i class="${categoryIcon(category)}"></i> ${category}</td>
+                    <td>${skillHtml || '<span style="color:#aaa;">No skills</span>'}</td>
+                    <td>${storeName}</td>
+                    <td><button onclick="deleteEmployee('${emp.id}')">Delete</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        } catch (err) {
+            console.error('Error loading employees:', err);
+        }
+    }
+
+    async function deleteProduct(productId) {
+        try {
+            const entityId = productId.startsWith('urn:ngsi-ld:') ? productId : `urn:ngsi-ld:Product:${productId}`;
+            await fetch(`/api/products/${encodeURIComponent(entityId)}`, { method: 'DELETE' });
+            loadProducts();
+        } catch (err) {
+            console.error('Error deleting product:', err);
+        }
+    }
+
+    async function deleteEmployee(employeeId) {
+        try {
+            const entityId = employeeId.startsWith('urn:ngsi-ld:') ? employeeId : `urn:ngsi-ld:Employee:${employeeId}`;
+            await fetch(`/api/employees/${encodeURIComponent(entityId)}`, { method: 'DELETE' });
+            loadEmployees();
+        } catch (err) {
+            console.error('Error deleting employee:', err);
+        }
+    }
+
+    async function loadProductDetail(productId) {
+        try {
+            const product = await fetch(`/api/products/${encodeURIComponent(productId)}`).then(r => r.json());
+            document.getElementById('product-image').src = product.image.value;
+            document.getElementById('product-name').textContent = product.name.value;
+            document.getElementById('product-size').textContent = `Size: ${product.size.value}`;
+            document.getElementById('product-price').textContent = `Price: €${product.price.value}`;
+            document.getElementById('product-color').innerHTML = `<span class="color-box" style="background:${product.color.value}; width: 20px; height: 20px; display:inline-block; border:1px solid #000;"></span> ${product.color.value}`;
+
+            const inventory = await fetch(`/api/inventoryitems?productId=${encodeURIComponent(`urn:ngsi-ld:Product:${productId}`)}`).then(r => r.json());
+            const storeIds = [...new Set(inventory.map(item => item.storeId.value))];
+            const storeDetails = {};
+            await Promise.all(storeIds.map(async storeId => {
+                try {
+                    const store = await fetch(`/api/stores/${encodeURIComponent(storeId)}`).then(r => r.json());
+                    storeDetails[storeId] = store;
+                } catch (e) {
+                    storeDetails[storeId] = {name: {value: storeId}};
+                }
+            }));
+
+            const storeShelves = {};
+            await Promise.all(storeIds.map(async storeId => {
+                try {
+                    const shelves = await fetch(`/api/shelves?storeId=${encodeURIComponent(storeId)}`).then(r => r.json());
+                    storeShelves[storeId] = shelves;
+                } catch (e) {
+                    storeShelves[storeId] = [];
+                }
+            }));
+
+            const grouped = {};
+            inventory.forEach(item => {
+                const storeId = item.storeId.value;
+                const shelfId = item.shelfId.value;
+                if (!grouped[storeId]) grouped[storeId] = {totalStock: 0, shelves: {}};
+                grouped[storeId].totalStock += item.stockCount.value;
+                grouped[storeId].shelves[shelfId] = {
+                    shelfCount: item.shelfCount.value,
+                    stockCount: item.stockCount.value,
+                    item
+                };
+            });
+
+            const wrapper = document.getElementById('inventory-by-store');
+            wrapper.innerHTML = '';
+            Object.keys(grouped).forEach(storeId => {
+                const storeName = storeDetails[storeId] ? storeDetails[storeId].name.value : storeId;
+                const block = document.createElement('div');
+                block.className = 'store-inventory-block';
+                block.innerHTML = `<h4>${storeName} (Total stock: ${grouped[storeId].totalStock})</h4>`;
+
+                const table = document.createElement('table');
+                table.className = 'inventory-group-table';
+                const thead = document.createElement('thead');
+                thead.innerHTML = '<tr><th>Shelf</th><th>Stock Count</th><th>Shelf Count</th></tr>';
+                table.appendChild(thead);
+                const tb = document.createElement('tbody');
+                Object.keys(grouped[storeId].shelves).forEach(shelfId => {
+                    const shelfData = grouped[storeId].shelves[shelfId];
+                    const shelfInfo = storeShelves[storeId] ? storeShelves[storeId].find(s => s.id === shelfId) : null;
+                    const shelfLabel = shelfInfo && shelfInfo.name && shelfInfo.name.value ? shelfInfo.name.value : (shelfId.split(':')[3] || shelfId);
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${shelfLabel}</td><td>${shelfData.stockCount}</td><td>${shelfData.shelfCount}</td>`;
+                    tb.appendChild(row);
+                });
+                table.appendChild(tb);
+                block.appendChild(table);
+                wrapper.appendChild(block);
+            });
+
+            const shelfSelect = document.getElementById('shelf-select');
+            const addBtn = document.getElementById('add-product-to-shelf');
+            const stockInput = document.getElementById('add-stock-count');
+            shelfSelect.innerHTML = '';
+
+            const existingShelfIds = new Set(inventory.map(item => item.shelfId.value));
+            let totalOptions = 0;
+            for (const storeId of storeIds) {
+                const shelves = await fetch(`/api/shelves?storeId=${encodeURIComponent(storeId)}`).then(r => r.json());
+                shelves.forEach(shelf => {
+                    if (!existingShelfIds.has(shelf.id)) {
+                        const opt = document.createElement('option');
+                        opt.value = shelf.id;
+                        opt.textContent = `${storeDetails[storeId]?.name?.value || storeId} > ${shelf.name.value}`;
+                        shelfSelect.appendChild(opt);
+                        totalOptions++;
+                    }
+                });
+            }
+
+            if (totalOptions === 0) {
+                shelfSelect.appendChild(new Option('No eligible shelves available', ''));
+                shelfSelect.disabled = true;
+                addBtn.disabled = true;
+            } else {
+                shelfSelect.disabled = false;
+                addBtn.disabled = false;
+            }
+
+            addBtn.onclick = async () => {
+                const selectedShelf = shelfSelect.value;
+                if (!selectedShelf) return;
+                const shelf = await fetch(`/api/shelves/${encodeURIComponent(selectedShelf)}`).then(r => r.json());
+                const stockCount = Number(stockInput.value) || 0;
+                await fetch('/api/inventoryitems', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        productId: `urn:ngsi-ld:Product:${productId}`,
+                        shelfId: selectedShelf,
+                        storeId: shelf.storeId.value,
+                        stockCount: stockCount,
+                        shelfCount: stockCount
+                    })
+                });
+                loadProductDetail(productId);
+            };
+
+        } catch (err) {
+            console.error('Error loading product detail:', err);
         }
     }
 

@@ -125,6 +125,15 @@ body {
 #inventory th, #inventory td { border: 1px solid #ccc; padding: 0.3rem; vertical-align: middle; word-wrap: break-word; }
 #inventory img { border-radius: 4px; }
 
+.inventory-group-table { width: 100%; border-collapse: collapse; margin-bottom: 0.8rem; }
+.inventory-group-table th, .inventory-group-table td { border: 1px solid #ccc; padding: 0.3rem; }
+.store-inventory-block { margin-bottom: 1rem; padding: 0.5rem; border: 1px solid #aaa; border-radius: 4px; background: #fff; }
+
+.color-box { display: inline-block; width: 16px; height: 16px; border: 1px solid #000; vertical-align: middle; margin-right: 6px; }
+
+.employee-img { border-radius: 50%; transition: transform 0.2s ease; }
+.employee-img:hover { transform: scale(1.1); }
+
 .progress-bar { background: #ddd; height: 20px; margin: 0.5rem 0; }
 
 .low-stock { color: red; font-weight: bold; }

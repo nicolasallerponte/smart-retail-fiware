@@ -7,6 +7,7 @@ inventoryitems_bp = Blueprint('inventoryitems_bp', __name__)
 def get_inventoryitems():
     store_id = request.args.get('storeId')
     shelf_id = request.args.get('shelfId')
+    product_id = request.args.get('productId')
     q_clauses = []
     if store_id:
         if not store_id.startswith('urn:ngsi-ld:'):
@@ -16,6 +17,10 @@ def get_inventoryitems():
         if not shelf_id.startswith('urn:ngsi-ld:'):
             shelf_id = f'urn:ngsi-ld:Shelf:{shelf_id}'
         q_clauses.append(f"shelfId=='{shelf_id}'")
+    if product_id:
+        if not product_id.startswith('urn:ngsi-ld:'):
+            product_id = f'urn:ngsi-ld:Product:{product_id}'
+        q_clauses.append(f"productId=='{product_id}'")
     q = ' and '.join(q_clauses) if q_clauses else None
     items = current_app.orion.query_entities('InventoryItem', limit=1000, q=q)
     return jsonify(items)

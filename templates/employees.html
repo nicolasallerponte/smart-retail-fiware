@@ -2,7 +2,20 @@
 {% block content %}
 <section>
   <h1>Employees</h1>
-  <p>Use API endpoints to manage employees.</p>
+  <div id="employee-list-wrapper">
+    <table id="employees-table">
+      <thead>
+        <tr>
+          <th>Photo</th>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Skills</th>
+          <th>Store</th>
+        </tr>
+      </thead>
+      <tbody id="employees-tbody"></tbody>
+    </table>
+  </div>
   <div id="status">Employees loaded on API calls</div>
 </section>
 {% endblock %}

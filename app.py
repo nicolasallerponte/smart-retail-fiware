@@ -97,6 +97,10 @@ def create_app():
     def products_page():
         return render_template('products.html')
 
+    @app.route('/products/<product_id>')
+    def product_detail(product_id):
+        return render_template('product_detail.html', product_id=product_id)
+
     @app.route('/stores')
     def stores_page():
         return render_template('stores.html')
