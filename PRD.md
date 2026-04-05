@@ -15,6 +15,7 @@
 - [x] Product detail view with inventory grouped by store/shelf and add-to-shelf functionality
 - [x] Active nav link highlighting in navbar
 - [x] Stores Map view at /stores-map
+- [x] Product Add/Edit modal form with validation
 
 
 ## 1. Overview
@@ -60,8 +61,8 @@
 - [x] Product detail page shows inventory grouped by store/shelf
 - [x] Add-to-shelf functionality with dynamic shelf selection
 - [x] Shelf names displayed instead of IDs
-- [ ] New products can be created with validation
-- [ ] Product details can be edited (except ID)
+- [x] New products can be created with validation
+- [x] Product details can be edited (name, price, size, color, image) — ID always read-only
 - [ ] Products can be deleted with confirmation
 
 ---

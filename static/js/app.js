@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadStoreDetail(storeId);
     } else if (pathname === '/products') {
         loadProducts();
+        initProductModal();
     } else if (pathname.startsWith('/products/')) {
         const productId = pathname.split('/')[2];
         loadProductDetail(productId);
@@ -133,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${product.size.value}</td>
                     <td><span class="color-box" style="background:${product.color.value}; width: 16px; height: 16px; display:inline-block; border: 1px solid #000;"></span></td>
                     <td>
-                        <button onclick="alert('Not implemented')">Edit</button>
+                        <button onclick="editProduct('${product.id}')">Edit</button>
                         <button onclick="deleteProduct('${product.id}')">Delete</button>
                     </td>
                 `;
@@ -142,6 +143,124 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             console.error('Error loading products:', err);
         }
+    }
+
+    function initProductModal() {
+        const modal      = document.getElementById('product-modal');
+        const form       = document.getElementById('product-form');
+        const titleEl    = document.getElementById('modal-title');
+        const idInput    = document.getElementById('product-form-id');
+        const nameInput  = document.getElementById('product-form-name');
+        const priceInput = document.getElementById('product-form-price');
+        const sizeSelect = document.getElementById('product-form-size');
+        const colorInput = document.getElementById('product-form-color');
+        const imageInput = document.getElementById('product-form-image');
+        const errorEl    = document.getElementById('product-form-error');
+        const addBtn     = document.getElementById('add-product-btn');
+        const cancelBtn  = document.getElementById('product-form-cancel');
+
+        // Guard: elements may not exist on other pages
+        if (!modal || !addBtn) return;
+
+        function openModal()  { modal.removeAttribute('hidden'); }
+        function closeModal() { modal.setAttribute('hidden', ''); errorEl.textContent = ''; }
+
+        // Open modal in create mode
+        addBtn.addEventListener('click', function () {
+            titleEl.textContent  = 'Add Product';
+            idInput.value        = '';
+            nameInput.value      = '';
+            priceInput.value     = '';
+            sizeSelect.value     = 'Medium';
+            colorInput.value     = '#000000';
+            imageInput.value     = '';
+            openModal();
+        });
+
+        cancelBtn.addEventListener('click', closeModal);
+
+        // Close on backdrop click
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) closeModal();
+        });
+
+        // Expose to window so dynamically generated Edit buttons can call it
+        window.editProduct = function (productId) {
+            fetch('/api/products/' + encodeURIComponent(productId))
+                .then(function (r) { return r.json(); })
+                .then(function (product) {
+                    titleEl.textContent  = 'Edit Product';
+                    idInput.value        = product.id;
+                    nameInput.value      = product.name  ? product.name.value  : '';
+                    priceInput.value     = product.price ? product.price.value : '';
+                    sizeSelect.value     = product.size  ? product.size.value  : 'Medium';
+                    colorInput.value     = product.color ? product.color.value : '#000000';
+                    imageInput.value     = product.image ? product.image.value : '';
+                    openModal();
+                })
+                .catch(function (err) { console.error('Error fetching product for edit:', err); });
+        };
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            errorEl.textContent = '';
+
+            // JS validation
+            const name  = nameInput.value.trim();
+            const price = parseFloat(priceInput.value);
+            const color = colorInput.value;
+            const image = imageInput.value.trim();
+
+            if (!name) {
+                errorEl.textContent = 'Name is required.';
+                return;
+            }
+            if (isNaN(price) || price < 0) {
+                errorEl.textContent = 'Price must be a positive number.';
+                return;
+            }
+            if (!/^#[0-9A-Fa-f]{6}$/.test(color)) {
+                errorEl.textContent = 'Color must be a valid hex code (#RRGGBB).';
+                return;
+            }
+            if (!image) {
+                errorEl.textContent = 'Image URL is required.';
+                return;
+            }
+
+            const productId = idInput.value;
+            const isEdit    = Boolean(productId);
+
+            // PATCH sends NGSI-formatted attrs; POST sends plain values (model class builds NGSI)
+            const body = isEdit
+                ? {
+                    name:  { type: 'String', value: name },
+                    price: { type: 'Number', value: price },
+                    size:  { type: 'String', value: sizeSelect.value },
+                    color: { type: 'String', value: color },
+                    image: { type: 'String', value: image }
+                  }
+                : { name, price, size: sizeSelect.value, color, image };
+
+            const url    = isEdit
+                ? '/api/products/' + encodeURIComponent(productId)
+                : '/api/products';
+            const method = isEdit ? 'PATCH' : 'POST';
+
+            fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            })
+                .then(function (r) {
+                    if (!r.ok) return r.text().then(function (t) { throw new Error(t); });
+                    closeModal();
+                    loadProducts();
+                })
+                .catch(function (err) {
+                    errorEl.textContent = 'Error saving product: ' + err.message;
+                });
+        });
     }
 
     async function loadEmployees() {

@@ -11,6 +11,7 @@
 - [x] Product detail view with inventory grouped by store/shelf and add-to-shelf functionality
 - [x] Active nav link highlighting in navbar
 - [x] Stores Map view at /stores-map
+- [x] Product Add/Edit modal form — ID always read-only, other attributes editable
 - [x] Shelf name resolution from IDs
 
 ## 1. UML Entity Diagram
