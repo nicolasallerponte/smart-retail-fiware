@@ -1,19 +1,41 @@
 {% extends 'base.html' %}
 {% block content %}
-<section>
+<div class="home-hero">
   <h1 data-i18n="pages.home.title">Welcome to Smart Retail FIWARE</h1>
-  <p data-i18n="pages.home.desc">This application is implemented with Flask and FIWARE NGSIv2 for real-time inventory management.</p>
+  <p data-i18n="pages.home.desc">Real-time inventory management powered by FIWARE Orion NGSIv2, Flask-SocketIO and Leaflet.</p>
   <div class="card-grid">
-    <div class="card"><a href="/products" data-i18n="nav.products">Products</a></div>
-    <div class="card"><a href="/stores" data-i18n="nav.stores">Stores</a></div>
-    <div class="card"><a href="/employees" data-i18n="nav.employees">Employees</a></div>
+    <div class="card">
+      <a href="/products">
+        <div class="card-icon"><i class="fas fa-box"></i></div>
+        <span data-i18n="nav.products">Products</span>
+      </a>
+    </div>
+    <div class="card">
+      <a href="/stores">
+        <div class="card-icon"><i class="fas fa-store"></i></div>
+        <span data-i18n="nav.stores">Stores</span>
+      </a>
+    </div>
+    <div class="card">
+      <a href="/employees">
+        <div class="card-icon"><i class="fas fa-users"></i></div>
+        <span data-i18n="nav.employees">Employees</span>
+      </a>
+    </div>
+    <div class="card">
+      <a href="/stores-map">
+        <div class="card-icon"><i class="fas fa-map-marked-alt"></i></div>
+        <span data-i18n="nav.map">Stores Map</span>
+      </a>
+    </div>
   </div>
-  <div class="uml">
-    <h2 data-i18n="pages.home.uml">UML Entity Diagram</h2>
-    <div class="mermaid">
+</div>
+
+<div class="uml">
+  <h2 data-i18n="pages.home.uml">UML Entity Diagram</h2>
+  <div class="mermaid">
 erDiagram
     EMPLOYEE ||--|| STORE : works_in
-    EMPLOYEE ||--o{ INVENTORY_ITEM : manages
     STORE ||--o{ SHELF : contains
     STORE ||--o{ INVENTORY_ITEM : stores
     PRODUCT ||--o{ INVENTORY_ITEM : "placed on"
@@ -26,41 +48,35 @@ erDiagram
         string dateOfContract
         string[] skills
         string username
-        string password
         string category
         string refStore FK
     }
-
     STORE {
         string id PK
         string name
         string url
         string telephone
         string countryCode
-        string capacity
-        decimal temperature
-        decimal relativeHumidity
+        number capacity
+        number temperature
+        number relativeHumidity
         string[] tweets
         string address
     }
-
     PRODUCT {
         string id PK
         string name
-        decimal price
+        number price
         string size
         string color
         string image
     }
-
     SHELF {
         string id PK
         string storeId FK
         string name
         integer level
-        string image
     }
-
     INVENTORY_ITEM {
         string id PK
         string productId FK
@@ -69,7 +85,6 @@ erDiagram
         integer stockCount
         integer shelfCount
     }
-    </div>
   </div>
-</section>
+</div>
 {% endblock %}

@@ -7,69 +7,76 @@
 
 <script>
   (function () {
-    // Initialise Leaflet map — container already has fixed height from style.css
+    const COUNTRY_FALLBACK = {
+      ES: [40.4168, -3.7038], FR: [48.8566, 2.3522],
+      DE: [52.5200, 13.4050], IT: [45.4642, 9.1900],
+      GB: [51.5074, -0.1278], PT: [38.7169, -9.1395],
+      NL: [52.3676, 4.9041],  BE: [50.8503, 4.3517],
+    };
+
     const map = L.map('stores-map-container').setView([48, 10], 4);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Fetch all stores then geocode and place markers
+    function placeMarker(store, lat, lng) {
+      const storeKey = store.id.split(':')[3] || store.id;
+      const name    = store.name ? store.name.value : 'Unknown';
+      const country = store.countryCode ? store.countryCode.value : '';
+      const temp    = store.temperature ? store.temperature.value + '°C' : 'N/A';
+      const hum     = store.relativeHumidity ? store.relativeHumidity.value + '%' : 'N/A';
+      const img     = store.image ? store.image.value : '';
+      const flagCls = country ? ' <span class="fi fi-' + country.toLowerCase() + '"></span>' : '';
+
+      const popupHtml =
+        '<div style="text-align:center;min-width:170px;font-family:sans-serif">' +
+          (img ? '<img src="' + img + '" alt="' + name + '" width="150" style="border-radius:6px;margin-bottom:6px;display:block;margin-left:auto;margin-right:auto"><br>' : '') +
+          '<strong style="font-size:14px">' + name + flagCls + '</strong><br>' +
+          '<small style="color:#666">' + (store.address ? store.address.value : '') + '</small><br><br>' +
+          '<span style="margin-right:8px">🌡 ' + temp + '</span>' +
+          '<span>💧 ' + hum + '</span><br><br>' +
+          '<a href="/stores/' + storeKey + '" style="background:#2d7d46;color:#fff;padding:4px 12px;border-radius:4px;text-decoration:none;font-size:12px">View Store →</a>' +
+        '</div>';
+
+      const marker = L.marker([lat, lng]).addTo(map);
+      marker.bindPopup(popupHtml, { maxWidth: 200 });
+      marker.on('mouseover', function () { marker.openPopup(); });
+      marker.on('mouseout',  function () { marker.closePopup(); });
+      marker.on('click',     function () { window.location.href = '/stores/' + storeKey; });
+    }
+
+    async function geocodeAndPlace(store, index) {
+      const address = store.address ? store.address.value : '';
+      const cc = store.countryCode ? store.countryCode.value.toUpperCase() : '';
+      let lat = null, lng = null;
+
+      if (address) {
+        await new Promise(resolve => setTimeout(resolve, index * 350));
+        try {
+          const geo = await fetch(
+            'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(address),
+            { headers: { 'Accept-Language': 'en', 'User-Agent': 'SmartRetailFIWARE/1.0' } }
+          ).then(r => r.json());
+          if (geo && geo.length > 0) {
+            lat = parseFloat(geo[0].lat);
+            lng = parseFloat(geo[0].lon);
+          }
+        } catch (e) { console.warn('Geocoding error', e); }
+      }
+
+      if (lat === null) {
+        const fallback = COUNTRY_FALLBACK[cc] || [48, 10];
+        [lat, lng] = fallback;
+        console.warn('Using fallback for', store.id, cc);
+      }
+
+      placeMarker(store, lat, lng);
+    }
+
     fetch('/api/stores')
-      .then(function (r) { return r.json(); })
-      .then(function (stores) {
-        stores.forEach(function (store, index) {
-          const address = store.address ? store.address.value : null;
-          if (!address) return;
-
-          // Throttle Nominatim requests: 300 ms per store (well within 1 req/s)
-          setTimeout(function () {
-            fetch(
-              'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' +
-              encodeURIComponent(address)
-            )
-              .then(function (r) { return r.json(); })
-              .then(function (geo) {
-                if (!geo || geo.length === 0) return;
-
-                const lat = parseFloat(geo[0].lat);
-                const lng = parseFloat(geo[0].lon);
-                const storeKey = store.id.split(':')[3] || store.id;
-
-                // Build popup HTML from existing store attributes
-                const name    = store.name ? store.name.value : 'Unknown';
-                const country = store.countryCode ? store.countryCode.value : 'N/A';
-                const temp    = store.temperature ? store.temperature.value + '°C' : 'N/A';
-                const hum     = store.relativeHumidity ? store.relativeHumidity.value + '%' : 'N/A';
-                const img     = store.image ? store.image.value : '';
-
-                const popupHtml =
-                  '<div style="text-align:center;min-width:160px">' +
-                    (img ? '<img src="' + img + '" alt="' + name + '" width="140" style="border-radius:6px;margin-bottom:6px"><br>' : '') +
-                    '<strong>' + name + '</strong><br>' +
-                    '<span>' + country + '</span><br>' +
-                    '<span><i class="fas fa-thermometer-half"></i> ' + temp + '</span>&nbsp;' +
-                    '<span><i class="fas fa-tint"></i> ' + hum + '</span>' +
-                  '</div>';
-
-                const marker = L.marker([lat, lng]).addTo(map);
-                marker.bindPopup(popupHtml);
-
-                // Show popup on hover, navigate on click
-                marker.on('mouseover', function () { marker.openPopup(); });
-                marker.on('mouseout',  function () { marker.closePopup(); });
-                marker.on('click',     function () {
-                  window.location.href = '/stores/' + storeKey;
-                });
-              })
-              .catch(function (err) {
-                console.warn('Geocoding failed for store ' + store.id + ':', err);
-              });
-          }, index * 300);
-        });
-      })
-      .catch(function (err) {
-        console.error('Failed to load stores:', err);
-      });
+      .then(r => r.json())
+      .then(stores => { stores.forEach((store, i) => geocodeAndPlace(store, i)); })
+      .catch(err => { console.error('Failed to load stores:', err); });
   }());
 </script>
 {% endblock %}

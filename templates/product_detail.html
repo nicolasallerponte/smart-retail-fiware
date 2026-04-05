@@ -1,25 +1,26 @@
 {% extends 'base.html' %}
 {% block content %}
-<section>
-  <h1 data-i18n="pages.product_detail.title">Product Detail</h1>
-  <div id="product-detail-header">
-    <img id="product-image" src="" alt="Product" style="max-width:150px;" />
+<div class="product-hero">
+  <img id="product-image" src="" alt="Product" />
+  <div class="product-hero-info">
     <h2 id="product-name"></h2>
     <p id="product-size"></p>
     <p id="product-price"></p>
     <div id="product-color"></div>
   </div>
+</div>
 
-  <div id="product-inventory-add" style="margin:0.8rem 0;">
-    <label for="shelf-select" data-i18n="pages.product_detail.add_to_shelf">Add to existing store shelf:</label>
-    <select id="shelf-select"></select>
-    <input id="add-stock-count" type="number" min="1" value="10" style="width:80px;" />
-    <button id="add-product-to-shelf" data-i18n="common.add">Add</button>
-  </div>
+<div class="product-add-shelf">
+  <label for="shelf-select" data-i18n="pages.product_detail.add_to_shelf">Add to shelf:</label>
+  <select id="shelf-select"></select>
+  <input id="add-stock-count" type="number" min="1" value="10" style="width:80px;" />
+  <button id="add-product-to-shelf" data-i18n="common.add">
+    <i class="fas fa-plus"></i> Add
+  </button>
+</div>
 
-  <div id="product-inventory">
-    <h3 data-i18n="pages.product_detail.inventory_by_store">Inventory by Store / Shelf</h3>
-    <div id="inventory-by-store"></div>
-  </div>
-</section>
+<div id="product-inventory">
+  <h3 data-i18n="pages.product_detail.inventory_by_store">Inventory by Store / Shelf</h3>
+  <div id="inventory-by-store"></div>
+</div>
 {% endblock %}

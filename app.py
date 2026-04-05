@@ -35,17 +35,27 @@ def create_app():
         if "Temperature and Humidity Provider" not in existing_descriptions:
             app.orion.register_provider({
                 "description": "Temperature and Humidity Provider",
-                "dataProviderURL": "http://localhost:3001",
-                "entities": [{"type": "Store", "isPattern": True}],
-                "attrs": ["temperature", "relativeHumidity"]
+                "dataProvided": {
+                    "entities": [{"idPattern": ".*", "type": "Store"}],
+                    "attrs": ["temperature", "relativeHumidity"]
+                },
+                "provider": {
+                    "http": {"url": "http://context-provider:3000"},
+                    "legacyForwarding": True
+                }
             })
-        
+
         if "Tweets Provider" not in existing_descriptions:
             app.orion.register_provider({
                 "description": "Tweets Provider",
-                "dataProviderURL": "http://localhost:3001",
-                "entities": [{"type": "Store", "isPattern": True}],
-                "attrs": ["tweets"]
+                "dataProvided": {
+                    "entities": [{"idPattern": ".*", "type": "Store"}],
+                    "attrs": ["tweets"]
+                },
+                "provider": {
+                    "http": {"url": "http://context-provider:3000"},
+                    "legacyForwarding": True
+                }
             })
         
         # Create subscriptions
