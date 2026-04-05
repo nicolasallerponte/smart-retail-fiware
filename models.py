@@ -6,7 +6,7 @@ def safe_str(value):
 
 
 class Employee:
-    def __init__(self, id, name, email, dateOfContract, skills, username, password, category=None, refStore=None):
+    def __init__(self, id, name, email, dateOfContract, skills, username, password, category=None, refStore=None, image=None):
         self.id = id
         self.name = name
         self.email = email
@@ -16,6 +16,7 @@ class Employee:
         self.password = password
         self.category = category
         self.refStore = refStore
+        self.image = image
 
     def to_ngsi(self):
         payload = {
@@ -28,7 +29,8 @@ class Employee:
             "username": {"type": "String", "value": self.username},
             "password": {"type": "String", "value": self.password},
             "category": {"type": "String", "value": self.category or ""},
-            "refStore": {"type": "String", "value": self.refStore or ""}
+            "refStore": {"type": "String", "value": self.refStore or ""},
+            "image": {"type": "String", "value": self.image or ""}
         }
         return payload
 

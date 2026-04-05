@@ -19,6 +19,7 @@
 - [x] Store Add/Edit modal form with JS validation and PATCH/POST API
 - [x] Employee Add/Edit modal form with JS validation and PATCH/POST API
 - [x] Shelf Add/Edit modal form with PATCH/POST API
+- [x] Client-side i18n system with translation dictionary and data-i18n tagging
 
 
 ## 1. System Overview

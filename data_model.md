@@ -15,6 +15,7 @@
 - [x] Store Add/Edit modal form — ID generated on create, editable attrs updated via PATCH
 - [x] Employee Add/Edit modal form — ID generated on create, editable attrs updated via PATCH
 - [x] Shelf Add/Edit modal form — ID generated on create, editable attrs updated via PATCH
+- [x] Client-side i18n tagging (data-i18n) applied to all templates
 - [x] Shelf name resolution from IDs
 
 ## 1. UML Entity Diagram
