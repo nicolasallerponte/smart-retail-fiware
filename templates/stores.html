@@ -18,4 +18,74 @@
     </tbody>
   </table>
 </section>
-{% endblock %}
+
+<!-- Store Add/Edit Modal -->
+<div id="store-modal" class="modal-overlay" hidden>
+  <div class="modal-content">
+    <h2 id="store-modal-title">Add Store</h2>
+    <form id="store-form" novalidate>
+      <input type="hidden" id="store-form-id" />
+      
+      <div class="form-group">
+        <label for="store-form-name">Name</label>
+        <input type="text" id="store-form-name" placeholder="e.g. Madrid Store" required />
+      </div>
+      
+      <div class="form-group">
+        <label for="store-form-telephone">Telephone</label>
+        <input type="text" id="store-form-telephone" placeholder="e.g. +34 912 345 678" required />
+      </div>
+      
+      <div class="form-group">
+        <label for="store-form-url">Website URL</label>
+        <input type="url" id="store-form-url" placeholder="https://example.com" required />
+      </div>
+      
+      <div class="form-group">
+        <label for="store-form-image">Image URL</label>
+        <input type="url" id="store-form-image" placeholder="https://example.com/image.jpg" required />
+      </div>
+      
+      <div class="form-group">
+        <label for="store-form-countryCode">Country Code</label>
+        <select id="store-form-countryCode" required>
+          <option value="ES">ES (Spain)</option>
+          <option value="FR">FR (France)</option>
+          <option value="DE">DE (Germany)</option>
+          <option value="IT">IT (Italy)</option>
+          <option value="GB">GB (United Kingdom)</option>
+          <option value="US">US (United States)</option>
+          <option value="PT">PT (Portugal)</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="store-form-capacity">Capacity</label>
+        <input type="number" id="store-form-capacity" min="0" placeholder="0" required />
+      </div>
+      
+      <div class="form-group">
+        <label for="store-form-description">Description</label>
+        <textarea id="store-form-description" placeholder="Short store description..." required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="store-form-temperature">Temperature (°C) - Read Only</label>
+        <input type="number" id="store-form-temperature" disabled />
+      </div>
+
+      <div class="form-group">
+        <label for="store-form-humidity">Relative Humidity (%) - Read Only</label>
+        <input type="number" id="store-form-humidity" disabled />
+      </div>
+
+      <div id="store-form-error" class="form-error"></div>
+      
+      <div class="form-actions">
+        <button type="button" id="store-form-cancel">Cancel</button>
+        <button type="submit" id="store-form-submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

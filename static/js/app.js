@@ -62,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pathname = window.location.pathname;
     if (pathname === '/stores') {
         loadStores();
+        initStoreModal();
     } else if (pathname.startsWith('/stores/')) {
         const storeId = pathname.split('/')[2];
         loadStoreDetail(storeId);
@@ -115,6 +116,136 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             console.error('Error loading stores:', err);
         }
+    }
+
+    function initStoreModal() {
+        const modal      = document.getElementById('store-modal');
+        const form       = document.getElementById('store-form');
+        const titleEl    = document.getElementById('store-modal-title');
+        const idInput    = document.getElementById('store-form-id');
+        const nameInput  = document.getElementById('store-form-name');
+        const telInput   = document.getElementById('store-form-telephone');
+        const urlInput   = document.getElementById('store-form-url');
+        const imgInput   = document.getElementById('store-form-image');
+        const countrySel = document.getElementById('store-form-countryCode');
+        const capInput   = document.getElementById('store-form-capacity');
+        const descText   = document.getElementById('store-form-description');
+        const tempInput  = document.getElementById('store-form-temperature');
+        const humInput   = document.getElementById('store-form-humidity');
+        const errorEl    = document.getElementById('store-form-error');
+        const createBtn  = document.getElementById('create-store-btn');
+        const cancelBtn  = document.getElementById('store-form-cancel');
+
+        if (!modal || !createBtn) return;
+
+        function openModal()  { modal.removeAttribute('hidden'); }
+        function closeModal() { modal.setAttribute('hidden', ''); errorEl.textContent = ''; }
+
+        createBtn.addEventListener('click', function () {
+            titleEl.textContent  = 'Add Store';
+            idInput.value        = '';
+            nameInput.value      = '';
+            telInput.value       = '';
+            urlInput.value       = '';
+            imgInput.value       = '';
+            countrySel.value     = 'ES';
+            capInput.value       = '0';
+            descText.value       = '';
+            tempInput.value      = '';
+            humInput.value       = '';
+            openModal();
+        });
+
+        cancelBtn.addEventListener('click', closeModal);
+
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) closeModal();
+        });
+
+        window.editStore = function (storeId) {
+            fetch('/api/stores/' + encodeURIComponent(storeId))
+                .then(r => r.json())
+                .then(store => {
+                    titleEl.textContent = 'Edit Store';
+                    idInput.value       = store.id;
+                    nameInput.value     = store.name ? store.name.value : '';
+                    telInput.value      = store.telephone ? store.telephone.value : '';
+                    urlInput.value      = store.url ? store.url.value : '';
+                    imgInput.value      = store.image ? store.image.value : '';
+                    countrySel.value    = store.countryCode ? store.countryCode.value : 'ES';
+                    capInput.value      = store.capacity ? store.capacity.value : '0';
+                    descText.value      = store.description ? store.description.value : '';
+                    tempInput.value     = store.temperature ? store.temperature.value : '';
+                    humInput.value      = store.relativeHumidity ? store.relativeHumidity.value : '';
+                    openModal();
+                })
+                .catch(err => { console.error('Error fetching store for edit:', err); });
+        };
+
+        window.deleteStore = function (storeId) {
+            if (!confirm('Are you sure you want to delete this store?')) return;
+            fetch('/api/stores/' + encodeURIComponent(storeId), { method: 'DELETE' })
+                .then(r => {
+                    if (!r.ok) throw new Error('Delete failed');
+                    loadStores();
+                })
+                .catch(err => { console.error('Error deleting store:', err); });
+        };
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            errorEl.textContent = '';
+
+            const name     = nameInput.value.trim();
+            const tel      = telInput.value.trim();
+            const urlVal   = urlInput.value.trim();
+            const imgVal   = imgInput.value.trim();
+            const country  = countrySel.value;
+            const capacity = parseInt(capInput.value, 10);
+            const desc     = descText.value.trim();
+
+            if (!name || !tel || !urlVal || !imgVal || isNaN(capacity) || !desc) {
+                errorEl.textContent = 'Please fill all required fields correctly.';
+                return;
+            }
+            if (country.length !== 2) {
+                errorEl.textContent = 'Country Code must be 2 characters.';
+                return;
+            }
+
+            const storeId = idInput.value;
+            const isEdit  = Boolean(storeId);
+
+            const body = isEdit ? {
+                name:        { type: 'String', value: name },
+                telephone:   { type: 'String', value: tel },
+                url:         { type: 'String', value: urlVal },
+                image:       { type: 'String', value: imgVal },
+                countryCode: { type: 'String', value: country },
+                capacity:    { type: 'Number', value: capacity },
+                description: { type: 'String', value: desc }
+            } : {
+                name, telephone: tel, url: urlVal, image: imgVal,
+                countryCode: country, capacity, description: desc
+            };
+
+            const apiUrl = isEdit ? '/api/stores/' + encodeURIComponent(storeId) : '/api/stores';
+            const method = isEdit ? 'PATCH' : 'POST';
+
+            fetch(apiUrl, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            })
+            .then(r => {
+                if (!r.ok) return r.text().then(t => { throw new Error(t); });
+                closeModal();
+                loadStores();
+            })
+            .catch(err => {
+                errorEl.textContent = 'Error saving store: ' + err.message;
+            });
+        });
     }
 
     async function loadProducts() {

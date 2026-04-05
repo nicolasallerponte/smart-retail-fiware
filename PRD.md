@@ -16,6 +16,7 @@
 - [x] Active nav link highlighting in navbar
 - [x] Stores Map view at /stores-map
 - [x] Product Add/Edit modal form with validation
+- [x] Store Add/Edit modal form with validation
 
 
 ## 1. Overview
@@ -63,7 +64,7 @@
 - [x] Shelf names displayed instead of IDs
 - [x] New products can be created with validation
 - [x] Product details can be edited (name, price, size, color, image) — ID always read-only
-- [ ] Products can be deleted with confirmation
+- [x] Products can be deleted with confirmation
 
 ---
 
@@ -103,6 +104,9 @@
 - [x] Add Product button shows only products not yet on that shelf
 - [x] Buy One button correctly decrements stock via Orion PATCH request
 - [x] Real-time notifications appear when price changes or stock drops
+- [x] New stores can be created with validation
+- [x] Store details can be edited (name, telephone, url, country, capacity, description, image)
+- [x] Stores can be deleted with confirmation
 
 ---
 
@@ -127,6 +131,7 @@
 - [ ] New employees can be created with validation
 - [ ] Employee details can be edited
 - [ ] Employees can be deleted with confirmation
+- [ ] Notifications for stock levels are functional
 
 ---
 

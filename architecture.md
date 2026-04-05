@@ -16,6 +16,7 @@
 - [x] Active nav link highlighting in navbar
 - [x] Stores Map view at /stores-map
 - [x] Product Add/Edit modal form with JS validation and PATCH/POST API
+- [x] Store Add/Edit modal form with JS validation and PATCH/POST API
 
 
 ## 1. System Overview
