@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.innerHTML = `
                     <td><img src="${store.image.value}" alt="${store.name.value}" width="50"></td>
                     <td><a href="/stores/${storeKey}">${store.name.value}</a></td>
-                    <td><i class="fi fi-${store.countryCode.value.toLowerCase()}"></i> ${store.countryCode.value}</td>
+                    <td><span class="fi fi-${store.countryCode.value.toLowerCase()}"></span> ${store.countryCode.value}</td>
                     <td class="temp">${store.temperature ? store.temperature.value + '°C' : window.t('common.na')}</td>
                     <td class="humidity">${store.relativeHumidity ? store.relativeHumidity.value + '%' : window.t('common.na')}</td>
                     <td>
@@ -810,7 +810,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const storeRes = await fetch(`/api/stores/${encodeURIComponent(entityId)}`);
             const store = await storeRes.json();
             document.getElementById('store-image').src = store.image.value;
-            document.getElementById('store-name').textContent = store.name.value;
+            const countryCode = store.countryCode ? store.countryCode.value.toLowerCase() : '';
+            document.getElementById('store-name').innerHTML = `${store.name.value} <span class="fi fi-${countryCode}"></span>`;
             document.getElementById('store-description').textContent = store.description.value;
             if (store.temperature) {
                 document.getElementById('temperature').innerHTML = `<i class="fas fa-thermometer-half"></i> ${store.temperature.value}°C`;
