@@ -323,6 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error deleting product:', err);
         }
     }
+    window.deleteProduct = deleteProduct;
 
     async function deleteEmployee(employeeId) {
         try {
