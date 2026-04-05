@@ -18,6 +18,7 @@
 - [x] Product Add/Edit modal form with JS validation and PATCH/POST API
 - [x] Store Add/Edit modal form with JS validation and PATCH/POST API
 - [x] Employee Add/Edit modal form with JS validation and PATCH/POST API
+- [x] Shelf Add/Edit modal form with PATCH/POST API
 
 
 ## 1. System Overview

@@ -43,5 +43,6 @@ def update_shelf(entity_id):
 
 @shelves_bp.route('/<entity_id>', methods=['DELETE'])
 def delete_shelf(entity_id):
+    entity_id = normalize_shelf_entity_id(entity_id)
     current_app.orion.delete_entity(entity_id)
     return jsonify({'status': 'deleted'})
