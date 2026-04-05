@@ -1,88 +1,78 @@
 {% extends 'base.html' %}
 {% block content %}
-<section>
+<div class="page-header">
   <h1 data-i18n="pages.stores.title">Stores</h1>
-  <button id="create-store-btn" data-i18n="pages.stores.add">Create New Store</button>
-  <table id="stores-table">
-    <thead>
-      <tr>
-        <th data-i18n="table.image">Image</th>
-        <th data-i18n="table.name">Name</th>
-        <th data-i18n="table.country">Country</th>
-        <th data-i18n="table.temp">Temperature</th>
-        <th data-i18n="table.humidity">Humidity</th>
-        <th data-i18n="table.actions">Actions</th>
-      </tr>
-    </thead>
-    <tbody id="stores-tbody">
-    </tbody>
-  </table>
-</section>
+  <button id="create-store-btn" data-i18n="pages.stores.add">
+    <i class="fas fa-plus"></i> Add Store
+  </button>
+</div>
+
+<table id="stores-table">
+  <thead>
+    <tr>
+      <th data-i18n="table.image">Image</th>
+      <th data-i18n="table.name">Name</th>
+      <th data-i18n="table.country">Country</th>
+      <th data-i18n="table.temp">Temperature</th>
+      <th data-i18n="table.humidity">Humidity</th>
+      <th data-i18n="table.actions">Actions</th>
+    </tr>
+  </thead>
+  <tbody id="stores-tbody"></tbody>
+</table>
 {% endblock %}
 
 {% block modals %}
-<!-- Store Add/Edit Modal -->
 <div id="store-modal" class="modal-overlay" hidden>
   <div class="modal-content">
     <h2 id="store-modal-title" data-i18n="modals.add_store">Add Store</h2>
     <form id="store-form" novalidate>
       <input type="hidden" id="store-form-id" />
-      
       <div class="form-group">
         <label for="store-form-name" data-i18n="forms.name">Name</label>
-        <input type="text" id="store-form-name" data-i18n="forms.name" placeholder="e.g. Madrid Store" required />
+        <input type="text" id="store-form-name" placeholder="e.g. Madrid Store" required />
       </div>
-      
       <div class="form-group">
         <label for="store-form-telephone" data-i18n="forms.telephone">Telephone</label>
-        <input type="text" id="store-form-telephone" data-i18n="forms.telephone" placeholder="e.g. +34 912 345 678" required />
+        <input type="text" id="store-form-telephone" placeholder="+34 912 345 678" required />
       </div>
-      
       <div class="form-group">
         <label for="store-form-url" data-i18n="forms.website_url">Website URL</label>
-        <input type="url" id="store-form-url" data-i18n="forms.website_url" placeholder="https://example.com" required />
+        <input type="url" id="store-form-url" placeholder="https://example.com" required />
       </div>
-      
       <div class="form-group">
         <label for="store-form-image" data-i18n="forms.image_url">Image URL</label>
-        <input type="url" id="store-form-image" data-i18n="forms.image_url" placeholder="https://example.com/image.jpg" required />
+        <input type="url" id="store-form-image" placeholder="https://example.com/image.jpg" required />
       </div>
-      
       <div class="form-group">
         <label for="store-form-countryCode" data-i18n="forms.country_code">Country Code</label>
         <select id="store-form-countryCode" required>
-          <option value="ES">ES (Spain)</option>
-          <option value="FR">FR (France)</option>
-          <option value="DE">DE (Germany)</option>
-          <option value="IT">IT (Italy)</option>
-          <option value="GB">GB (United Kingdom)</option>
-          <option value="US">US (United States)</option>
-          <option value="PT">PT (Portugal)</option>
+          <option value="ES">🇪🇸 ES — Spain</option>
+          <option value="FR">🇫🇷 FR — France</option>
+          <option value="DE">🇩🇪 DE — Germany</option>
+          <option value="IT">🇮🇹 IT — Italy</option>
+          <option value="GB">🇬🇧 GB — United Kingdom</option>
+          <option value="US">🇺🇸 US — United States</option>
+          <option value="PT">🇵🇹 PT — Portugal</option>
         </select>
       </div>
-      
       <div class="form-group">
-        <label for="store-form-capacity" data-i18n="forms.capacity">Capacity</label>
-        <input type="number" id="store-form-capacity" min="0" data-i18n="forms.capacity" placeholder="0" required />
+        <label for="store-form-capacity" data-i18n="forms.capacity">Capacity (m³)</label>
+        <input type="number" id="store-form-capacity" min="0" placeholder="0" required />
       </div>
-      
       <div class="form-group">
         <label for="store-form-description" data-i18n="forms.description">Description</label>
-        <textarea id="store-form-description" data-i18n="forms.description" placeholder="Short store description..." required></textarea>
+        <textarea id="store-form-description" placeholder="Short store description..." required></textarea>
       </div>
-
       <div class="form-group">
-        <label for="store-form-temperature" data-i18n="forms.temp_readonly">Temperature (°C) - Read Only</label>
+        <label data-i18n="forms.temp_readonly">Temperature (°C) — read-only</label>
         <input type="number" id="store-form-temperature" disabled />
       </div>
-
       <div class="form-group">
-        <label for="store-form-humidity" data-i18n="forms.hum_readonly">Relative Humidity (%) - Read Only</label>
+        <label data-i18n="forms.hum_readonly">Relative Humidity (%) — read-only</label>
         <input type="number" id="store-form-humidity" disabled />
       </div>
-
       <div id="store-form-error" class="form-error"></div>
-      
       <div class="form-actions">
         <button type="button" id="store-form-cancel" data-i18n="common.cancel">Cancel</button>
         <button type="submit" id="store-form-submit" data-i18n="common.save">Save</button>
@@ -90,4 +80,4 @@
     </form>
   </div>
 </div>
-{% endblock %}
+{% endblock %}

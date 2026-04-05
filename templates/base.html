@@ -21,7 +21,7 @@
 <body>
 <header class="navbar">
     <div class="navbar-left">
-        <a href="/" class="nav-logo" data-i18n="nav.logo">Smart Retail FIWARE</a>
+        <a href="/" class="nav-logo" data-i18n="nav.logo">Smart<span>Retail</span></a>
         <a href="/products" class="nav-link" data-i18n="nav.products">Products</a>
         <a href="/stores" class="nav-link" data-i18n="nav.stores">Stores</a>
         <a href="/employees" class="nav-link" data-i18n="nav.employees">Employees</a>
@@ -40,6 +40,12 @@
 </header>
 <main class="content">{% block content %}{% endblock %}</main>
 {% block modals %}{% endblock %}
-<footer class="footer" data-i18n="nav.footer">© 2026 Smart Retail FIWARE</footer>
+<footer class="footer">
+    <span>© 2026 Smart<strong>Retail</strong> FIWARE</span>
+    <span class="footer-sep">·</span>
+    <span>Jacobo Cousillas Taboada &amp; Nicolás Aller Ponte</span>
+    <span class="footer-sep">·</span>
+    <span>Gestión de Datos en Escenarios Inteligentes</span>
+</footer>
 </body>
 </html>

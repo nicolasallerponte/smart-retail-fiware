@@ -26,14 +26,27 @@ document.addEventListener('DOMContentLoaded', () => {
             table: { image: "Image", name: "Name", price: "Price", size: "Size", color: "Color", actions: "Actions", country: "Country", temp: "Temperature", humidity: "Humidity", photo: "Photo", category: "Category", skills: "Skills", store: "Store", stock: "Stock", shelf: "Shelf", level: "Level" },
             forms: { name: "Name", price: "Price (€)", size: "Size", color: "Color", image_url: "Image URL", telephone: "Telephone", website_url: "Website URL", country_code: "Country Code", capacity: "Capacity", description: "Description", temp_readonly: "Temperature (°C) - Read Only", hum_readonly: "Relative Humidity (%) - Solo lectura", username: "Username", email: "Email", password: "Password", date_contract: "Date of Contract", store: "Store", skills: "Skills", skill_machinery: "Mach. Driving", skill_reports: "Writing Reports", skill_relations: "Cust. Relations", shelf_name: "Shelf Name", level: "Level", image_optional: "Image URL (Optional)" },
             modals: { add_product: "Add Product", edit_product: "Edit Product", add_store: "Add Store", edit_store: "Edit Store", add_employee: "Add Employee", edit_employee: "Edit Employee", add_shelf: "Add Shelf", edit_shelf: "Edit Shelf" },
-            messages: { 
-                confirm_delete_store: "Are you sure you want to delete this store?", 
-                confirm_delete_product: "Are you sure you want to delete this product?", 
-                confirm_delete_employee: "Are you sure you want to delete this employee?", 
-                confirm_delete_shelf: "Are you sure you want to delete this shelf?", 
+            messages: {
+                confirm_delete_store: "Are you sure you want to delete this store?",
+                confirm_delete_product: "Are you sure you want to delete this product?",
+                confirm_delete_employee: "Are you sure you want to delete this employee?",
+                confirm_delete_shelf: "Are you sure you want to delete this shelf?",
                 low_stock_alert: "Low stock alert: Product {prod} in Store {store} has {count} units",
                 invalid_shelf_error: "Please provide a valid name and level."
-            }
+            },
+            productNames: {
+                'Industrial Motor': 'Industrial Motor',
+                'Control Panel': 'Control Panel',
+                'Safety Helmet': 'Safety Helmet',
+                'Work Gloves': 'Work Gloves',
+                'Hydraulic Pump': 'Hydraulic Pump',
+                'Pressure Gauge': 'Pressure Gauge',
+                'Steel Cable': 'Steel Cable',
+                'LED Light Strip': 'LED Light Strip',
+                'Battery Pack': 'Battery Pack',
+                'Tool Kit': 'Tool Kit'
+            },
+            sizes: { 'Large': 'Large', 'Medium': 'Medium', 'Small': 'Small', 'One Size': 'One Size' }
         },
         es: {
             nav: { products: "Productos", stores: "Tiendas", employees: "Empleados", map: "Mapa de Tiendas" },
@@ -50,14 +63,27 @@ document.addEventListener('DOMContentLoaded', () => {
             table: { image: "Imagen", name: "Nombre", price: "Precio", size: "Talla", color: "Color", actions: "Acciones", country: "País", temp: "Temperatura", humidity: "Humedad", photo: "Foto", category: "Categoría", skills: "Habilidades", store: "Tienda", stock: "Existencias", shelf: "Estantería", level: "Nivel" },
             forms: { name: "Nombre", price: "Precio (€)", size: "Talla", color: "Color", image_url: "URL de Imagen", telephone: "Teléfono", website_url: "URL del Sitio Web", country_code: "Código de País", capacity: "Capacidad", description: "Descripción", temp_readonly: "Temperatura (°C) - Solo lectura", hum_readonly: "Humedad Relativa (%) - Solo lectura", username: "Nombre de usuario", email: "Correo electrónico", password: "Contraseña", date_contract: "Fecha de contrato", store: "Tienda", skills: "Habilidades", skill_machinery: "Conducción Maquinaria", skill_reports: "Redacción de Informes", skill_relations: "Relaciones con Clientes", shelf_name: "Nombre de Estantería", level: "Nivel", image_optional: "URL de Imagen (Opcional)" },
             modals: { add_product: "Añadir Producto", edit_product: "Editar Producto", add_store: "Añadir Tienda", edit_store: "Editar Tienda", add_employee: "Añadir Empleado", edit_employee: "Editar Empleado", add_shelf: "Añadir Estantería", edit_shelf: "Editar Estantería" },
-            messages: { 
-                confirm_delete_store: "¿Estás seguro de que quieres eliminar esta tienda?", 
-                confirm_delete_product: "¿Estás seguro de que quieres eliminar este producto?", 
-                confirm_delete_employee: "¿Estás seguro de que quieres eliminar este empleado?", 
-                confirm_delete_shelf: "¿Estás seguro de que quieres eliminar esta estantería?", 
+            messages: {
+                confirm_delete_store: "¿Estás seguro de que quieres eliminar esta tienda?",
+                confirm_delete_product: "¿Estás seguro de que quieres eliminar este producto?",
+                confirm_delete_employee: "¿Estás seguro de que quieres eliminar este empleado?",
+                confirm_delete_shelf: "¿Estás seguro de que quieres eliminar esta estantería?",
                 low_stock_alert: "Alerta de stock bajo: El producto {prod} en la tienda {store} tiene {count} unidades",
                 invalid_shelf_error: "Por favor, introduzca un nombre y un nivel válidos."
-            }
+            },
+            productNames: {
+                'Industrial Motor': 'Motor Industrial',
+                'Control Panel': 'Panel de Control',
+                'Safety Helmet': 'Casco de Seguridad',
+                'Work Gloves': 'Guantes de Trabajo',
+                'Hydraulic Pump': 'Bomba Hidráulica',
+                'Pressure Gauge': 'Manómetro',
+                'Steel Cable': 'Cable de Acero',
+                'LED Light Strip': 'Tira de LEDs',
+                'Battery Pack': 'Pack de Baterías',
+                'Tool Kit': 'Kit de Herramientas'
+            },
+            sizes: { 'Large': 'Grande', 'Medium': 'Mediano', 'Small': 'Pequeño', 'One Size': 'Talla Única' }
         }
     };
 
@@ -68,6 +94,16 @@ document.addEventListener('DOMContentLoaded', () => {
             translation = translation.replace(`{${p}}`, params[p]);
         }
         return translation;
+    };
+
+    window.tProduct = function(name) {
+        const lang = localStorage.getItem('lang') || 'en';
+        return (TRANSLATIONS[lang].productNames && TRANSLATIONS[lang].productNames[name]) || name;
+    };
+
+    window.tSize = function(size) {
+        const lang = localStorage.getItem('lang') || 'en';
+        return (TRANSLATIONS[lang].sizes && TRANSLATIONS[lang].sizes[size]) || size;
     };
 
     function setTheme(theme) {
@@ -162,8 +198,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td class="temp">${store.temperature ? store.temperature.value + '°C' : window.t('common.na')}</td>
                     <td class="humidity">${store.relativeHumidity ? store.relativeHumidity.value + '%' : window.t('common.na')}</td>
                     <td>
-                        <button onclick="editStore('${store.id}')">${window.t('common.edit')}</button>
-                        <button onclick="deleteStore('${store.id}')">${window.t('common.delete')}</button>
+                        <button class="btn-edit" onclick="editStore('${store.id}')"><i class="fas fa-pen"></i> ${window.t('common.edit')}</button>
+                        <button class="btn-delete" onclick="deleteStore('${store.id}')"><i class="fas fa-trash"></i> ${window.t('common.delete')}</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -329,14 +365,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const row = document.createElement('tr');
                 const productKey = product.id.split(':')[3] || product.id;
                 row.innerHTML = `
-                    <td><img src="${product.image.value}" width="50" alt="${product.name.value}" /></td>
-                    <td><a href="/products/${productKey}">${product.name.value}</a></td>
+                    <td><img src="${product.image.value}" width="50" alt="${window.tProduct(product.name.value)}" /></td>
+                    <td><a href="/products/${productKey}">${window.tProduct(product.name.value)}</a></td>
                     <td>€${product.price.value}</td>
-                    <td>${product.size.value}</td>
+                    <td>${window.tSize(product.size.value)}</td>
                     <td><span class="color-box" style="background:${product.color.value}; width: 16px; height: 16px; display:inline-block; border: 1px solid #000;"></span></td>
                     <td>
-                        <button onclick="editProduct('${product.id}')">${window.t('common.edit')}</button>
-                        <button onclick="deleteProduct('${product.id}')">${window.t('common.delete')}</button>
+                        <button class="btn-edit" onclick="editProduct('${product.id}')"><i class="fas fa-pen"></i> ${window.t('common.edit')}</button>
+                        <button class="btn-delete" onclick="deleteProduct('${product.id}')"><i class="fas fa-trash"></i> ${window.t('common.delete')}</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -507,8 +543,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${emp.skills ? emp.skills.value.join(', ') : window.t('common.na')}</td>
                     <td>${storeName}</td>
                     <td>
-                        <button onclick="editEmployee('${emp.id}')">${window.t('common.edit')}</button>
-                        <button onclick="deleteEmployee('${emp.id}')">${window.t('common.delete')}</button>
+                        <button class="btn-edit" onclick="editEmployee('${emp.id}')"><i class="fas fa-pen"></i> ${window.t('common.edit')}</button>
+                        <button class="btn-delete" onclick="deleteEmployee('${emp.id}')"><i class="fas fa-trash"></i> ${window.t('common.delete')}</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -680,9 +716,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const product = await fetch(`/api/products/${encodeURIComponent(productId)}`).then(r => r.json());
             document.getElementById('product-image').src = product.image.value;
-            document.getElementById('product-name').textContent = product.name.value;
-            document.getElementById('product-size').textContent = `Size: ${product.size.value}`;
-            document.getElementById('product-price').textContent = `Price: €${product.price.value}`;
+            document.getElementById('product-name').textContent = window.tProduct(product.name.value);
+            document.getElementById('product-size').textContent = `${window.t('table.size')}: ${window.tSize(product.size.value)}`;
+            document.getElementById('product-price').textContent = `${window.t('table.price')}: €${product.price.value}`;
             document.getElementById('product-color').innerHTML = `<span class="color-box" style="background:${product.color.value}; width: 20px; height: 20px; display:inline-block; border:1px solid #000;"></span> ${product.color.value}`;
 
             const inventory = await fetch(`/api/inventoryitems?productId=${encodeURIComponent(`urn:ngsi-ld:Product:${productId}`)}`).then(r => r.json());
@@ -824,7 +860,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (store.tweets) {
                 document.getElementById('tweets-content').innerHTML = store.tweets.value.map(tweet => `<p>${tweet}</p>`).join('');
             }
-            initMap(store.address ? store.address.value : 'Unknown');
+            initMap(store.address ? store.address.value : '', store.countryCode ? store.countryCode.value.toUpperCase() : '');
             try { init3D(storeId); } catch(e) { console.warn('3D init failed', e); }
             loadInventory(storeId);
             // Add shelf button
@@ -842,20 +878,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function initMap(address) {
-        let lat = 0, lng = 0;
-        try {
-            const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
-            const geo = await geoRes.json();
-            if (geo.length > 0) {
-                lat = parseFloat(geo[0].lat);
-                lng = parseFloat(geo[0].lon);
-            } else {
-                alert('Geocoding failed, showing default location');
+    const COUNTRY_FALLBACK = {
+        ES: [40.4168, -3.7038],
+        FR: [48.8566,  2.3522],
+        DE: [52.5200, 13.4050],
+        IT: [45.4642,  9.1900],
+        GB: [51.5074, -0.1278],
+        PT: [38.7169, -9.1395],
+        NL: [52.3676,  4.9041],
+        BE: [50.8503,  4.3517],
+    };
+
+    async function initMap(address, countryCode) {
+        let lat = null, lng = null;
+        if (address) {
+            try {
+                const geoRes = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(address)}`,
+                    { headers: { 'Accept-Language': 'en', 'User-Agent': 'SmartRetailFIWARE/1.0' } }
+                );
+                const geo = await geoRes.json();
+                if (geo.length > 0) {
+                    lat = parseFloat(geo[0].lat);
+                    lng = parseFloat(geo[0].lon);
+                }
+            } catch (err) {
+                console.warn('Geocoding error:', err);
             }
-        } catch (err) {
-            console.error('Geocoding error:', err);
-            alert('Geocoding failed, showing default location');
+        }
+        if (lat === null) {
+            const fallback = (countryCode && COUNTRY_FALLBACK[countryCode]) || [40.4168, -3.7038];
+            [lat, lng] = fallback;
+            console.warn(`Geocoding failed for "${address}", using country fallback for ${countryCode}`);
         }
         const map = L.map('map').setView([lat, lng], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -865,95 +919,217 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function init3D(storeId) {
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, 400 / 400, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(400, 400);
-        renderer.setPixelRatio(window.devicePixelRatio);
         const container = document.getElementById('3d-tour');
-        container.innerHTML = ''; // Clear previous
+        if (!container) return;
+        container.innerHTML = '';
+
+        const W = container.clientWidth || 560;
+        const H = 380;
+
+        // Scene
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0d1117);
+        scene.fog = new THREE.FogExp2(0x0d1117, 0.045);
+
+        const camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 200);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(W, H);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         container.appendChild(renderer.domElement);
 
-        const light = new THREE.AmbientLight(0x404040, 1.2);
-        scene.add(light);
-        const pointLight = new THREE.PointLight(0xffffff, 0.8);
-        pointLight.position.set(5, 5, 5);
-        scene.add(pointLight);
+        // Lighting
+        scene.add(new THREE.AmbientLight(0x8899aa, 0.7));
+        const sun = new THREE.DirectionalLight(0xffffff, 0.9);
+        sun.position.set(8, 12, 6);
+        sun.castShadow = true;
+        sun.shadow.mapSize.width = 1024;
+        sun.shadow.mapSize.height = 1024;
+        scene.add(sun);
+        const fill = new THREE.PointLight(0x2d7d46, 1.2, 30);
+        fill.position.set(-6, 6, 0);
+        scene.add(fill);
+        const accent = new THREE.PointLight(0xd97706, 0.8, 25);
+        accent.position.set(6, 4, 6);
+        scene.add(accent);
 
-        camera.position.set(0, 2, 5);
-        camera.lookAt(0, 0, 0);
+        // Floor
+        const floor = new THREE.Mesh(
+            new THREE.PlaneGeometry(40, 40),
+            new THREE.MeshLambertMaterial({ color: 0x111a0e })
+        );
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
 
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
+        const grid = new THREE.GridHelper(40, 40, 0x1a3a1a, 0x152015);
+        grid.material.transparent = true;
+        grid.material.opacity = 0.6;
+        scene.add(grid);
 
         const interactables = [];
 
-        fetch(`/api/shelves?storeId=urn:ngsi-ld:Store:${storeId}`).then(r => r.json()).then(shelves => {
-            shelves.forEach((shelf, i) => {
-                const geometry = new THREE.BoxGeometry(1, 0.5, 0.5);
-                const material = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
-                const cube = new THREE.Mesh(geometry, material);
-                cube.position.set(i * 1.5 - (shelves.length * 0.75), shelf.level.value * 0.8, 0);
-                cube.userData = { type: 'shelf', id: shelf.id };
-                scene.add(cube);
-                interactables.push(cube);
+        // Materials
+        const metalMat  = new THREE.MeshPhongMaterial({ color: 0x607060, shininess: 60, specular: 0x223322 });
+        const shelfMat  = new THREE.MeshPhongMaterial({ color: 0x3a4a3a, shininess: 30 });
+        const postGeo   = new THREE.BoxGeometry(0.06, 3.6, 0.06);
+        const boardGeo  = new THREE.BoxGeometry(1.6, 0.05, 0.7);
 
-                fetch(`/api/inventoryitems?shelfId=${encodeURIComponent(shelf.id)}`).then(r => r.json()).then(items => {
-                    items.forEach((item, j) => {
-                        const smallGeo = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-                        const smallMat = new THREE.MeshPhongMaterial({ color: 0xff0000 });
-                        const smallCube = new THREE.Mesh(smallGeo, smallMat);
-                        smallCube.position.set(j * 0.25 - 0.35, 0.35, 0);
-                        smallCube.userData = { 
-                            type: 'product', 
-                            name: item.productId.value.split(':').pop(), 
-                            stock: item.stockCount.value 
-                        };
-                        cube.add(smallCube);
-                        interactables.push(smallCube);
-                    });
-                });
+        function buildShelfUnit(x, z, shelfId, shelfName) {
+            const group = new THREE.Group();
+            group.position.set(x, 0, z);
+
+            // Four vertical posts
+            [[-0.75, -0.32], [-0.75, 0.32], [0.75, -0.32], [0.75, 0.32]].forEach(([px, pz]) => {
+                const post = new THREE.Mesh(postGeo, metalMat);
+                post.position.set(px, 1.8, pz);
+                post.castShadow = true;
+                group.add(post);
             });
-        });
 
+            // Three shelf boards
+            [0.3, 1.3, 2.3].forEach(y => {
+                const board = new THREE.Mesh(boardGeo, shelfMat);
+                board.position.set(0, y, 0);
+                board.receiveShadow = true;
+                board.castShadow = true;
+                board.userData = { type: 'shelf', id: shelfId };
+                group.add(board);
+                interactables.push(board);
+            });
+
+            // Label backing strip
+            const labelGeo = new THREE.BoxGeometry(1.6, 0.25, 0.04);
+            const labelMat = new THREE.MeshPhongMaterial({ color: 0x2d7d46 });
+            const label = new THREE.Mesh(labelGeo, labelMat);
+            label.position.set(0, 3.2, -0.33);
+            group.add(label);
+
+            scene.add(group);
+            return group;
+        }
+
+        fetch(`/api/shelves?storeId=urn:ngsi-ld:Store:${storeId}`)
+            .then(r => r.json())
+            .then(async shelves => {
+                const cols = Math.min(shelves.length, 4);
+                const SPACEX = 4.5, SPACEZ = 3.5;
+                const offX = -((cols - 1) * SPACEX) / 2;
+
+                for (let i = 0; i < shelves.length; i++) {
+                    const shelf = shelves[i];
+                    const col = i % cols;
+                    const row = Math.floor(i / cols);
+                    const sx = offX + col * SPACEX;
+                    const sz = row * SPACEZ - 2;
+
+                    buildShelfUnit(sx, sz, shelf.id, shelf.name ? shelf.name.value : shelf.id);
+
+                    try {
+                        const items = await fetch(`/api/inventoryitems?shelfId=${encodeURIComponent(shelf.id)}`).then(r => r.json());
+                        const N_COLS = 3;
+                        for (let j = 0; j < Math.min(items.length, 9); j++) {
+                            const item = items[j];
+                            const boardIdx = Math.floor(j / N_COLS);
+                            const colIdx   = j % N_COLS;
+                            const boardY = [0.3, 1.3, 2.3][boardIdx % 3];
+                            const bx = sx + (colIdx * 0.5 - 0.5);
+
+                            try {
+                                const product = await fetch(`/api/products/${encodeURIComponent(item.productId.value)}`).then(r => r.json());
+                                const hexColor = parseInt((product.color ? product.color.value : '#888888').replace('#', ''), 16);
+                                const stockH = 0.18 + Math.min(item.stockCount.value / 200, 1) * 0.22;
+                                const boxMat = new THREE.MeshPhongMaterial({ color: hexColor, shininess: 80, specular: 0x333333 });
+                                const box = new THREE.Mesh(new THREE.BoxGeometry(0.35, stockH, 0.35), boxMat);
+                                box.position.set(bx, boardY + stockH / 2 + 0.03, sz);
+                                box.castShadow = true;
+                                box.userData = {
+                                    type: 'product',
+                                    name: window.tProduct ? window.tProduct(product.name.value) : product.name.value,
+                                    stock: item.stockCount.value,
+                                    shelfId: shelf.id
+                                };
+                                scene.add(box);
+                                interactables.push(box);
+                            } catch (e) {}
+                        }
+                    } catch (e) {}
+                }
+            });
+
+        // Tooltip
         const tooltip = document.createElement('div');
-        tooltip.style.position = 'absolute';
-        tooltip.style.background = 'rgba(0,0,0,0.8)';
-        tooltip.style.color = 'white';
-        tooltip.style.padding = '5px';
-        tooltip.style.borderRadius = '4px';
-        tooltip.style.fontSize = '12px';
-        tooltip.style.display = 'none';
-        tooltip.style.pointerEvents = 'none';
-        tooltip.style.zIndex = '10000';
+        tooltip.style.cssText = 'position:fixed;background:rgba(13,17,23,.92);color:#e2f5e8;padding:7px 12px;border-radius:6px;font-size:12px;line-height:1.5;pointer-events:none;display:none;z-index:10000;border:1px solid #2d7d46;';
         document.body.appendChild(tooltip);
 
-        container.addEventListener('click', (event) => {
-            const rect = container.getBoundingClientRect();
-            mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
-            mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
-            
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(interactables);
+        // Orbit controls (manual)
+        let theta = 0.4, phi = 0.45, radius = 18;
+        let isDragging = false, autoRotate = true;
+        let prevX = 0, prevY = 0;
+        const target = new THREE.Vector3(0, 1.5, 0);
 
-            if (intersects.length > 0) {
-                const obj = intersects[0].object;
-                if (obj.userData.type === 'shelf') {
-                    const sectionId = `shelf-section-${obj.userData.id}`;
-                    const el = document.getElementById(sectionId);
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                } else if (obj.userData.type === 'product') {
-                    tooltip.innerHTML = `<strong>${obj.userData.name}</strong><br>Stock: ${obj.userData.stock}`;
-                    tooltip.style.left = event.pageX + 10 + 'px';
-                    tooltip.style.top = event.pageY + 10 + 'px';
+        renderer.domElement.addEventListener('mousedown', e => { isDragging = true; autoRotate = false; prevX = e.clientX; prevY = e.clientY; });
+        window.addEventListener('mouseup', () => { isDragging = false; });
+        renderer.domElement.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+        renderer.domElement.addEventListener('wheel', e => {
+            radius = Math.max(6, Math.min(30, radius + e.deltaY * 0.03));
+            e.preventDefault();
+        }, { passive: false });
+
+        const raycaster = new THREE.Raycaster();
+        renderer.domElement.addEventListener('mousemove', e => {
+            if (isDragging) {
+                theta -= (e.clientX - prevX) * 0.006;
+                phi = Math.max(0.1, Math.min(1.4, phi - (e.clientY - prevY) * 0.006));
+                prevX = e.clientX; prevY = e.clientY;
+            } else {
+                const rect = renderer.domElement.getBoundingClientRect();
+                const mx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                const my = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                raycaster.setFromCamera(new THREE.Vector2(mx, my), camera);
+                const hits = raycaster.intersectObjects(interactables);
+                if (hits.length > 0 && hits[0].object.userData.type === 'product') {
+                    const ud = hits[0].object.userData;
+                    tooltip.innerHTML = `<strong>${ud.name}</strong><br>Stock: ${ud.stock} units`;
+                    tooltip.style.left = (e.clientX + 14) + 'px';
+                    tooltip.style.top  = (e.clientY - 10) + 'px';
                     tooltip.style.display = 'block';
-                    setTimeout(() => { tooltip.style.display = 'none'; }, 2000);
+                    renderer.domElement.style.cursor = 'pointer';
+                } else {
+                    tooltip.style.display = 'none';
+                    renderer.domElement.style.cursor = 'grab';
                 }
             }
         });
 
+        renderer.domElement.addEventListener('click', e => {
+            const rect = renderer.domElement.getBoundingClientRect();
+            const mx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            const my = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+            raycaster.setFromCamera(new THREE.Vector2(mx, my), camera);
+            const hits = raycaster.intersectObjects(interactables);
+            if (hits.length > 0) {
+                const ud = hits[0].object.userData;
+                if (ud.shelfId) {
+                    const el = document.getElementById('shelf-section-' + ud.shelfId);
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        });
+
+        renderer.domElement.style.cursor = 'grab';
+        renderer.domElement.style.borderRadius = '8px';
+
         function animate() {
             requestAnimationFrame(animate);
+            if (autoRotate) theta += 0.004;
+            camera.position.set(
+                target.x + radius * Math.sin(theta) * Math.cos(phi),
+                target.y + radius * Math.sin(phi),
+                target.z + radius * Math.cos(theta) * Math.cos(phi)
+            );
+            camera.lookAt(target);
             renderer.render(scene, camera);
         }
         animate();
@@ -981,9 +1157,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const color = fillPercent < 25 ? 'red' : fillPercent <= 75 ? 'yellow' : 'green';
                 const div = document.createElement('div');
                 div.id = `shelf-section-${shelfId}`;
-                const title = document.createElement('h4');
-                title.innerHTML = `${shelf.name.value} <button onclick="editShelf('${shelfId}')">Edit</button> <button onclick="addProductToShelf('${shelfId}')">Add Product</button>`;
-                div.appendChild(title);
+                const shelfHeader = document.createElement('div');
+                shelfHeader.className = 'shelf-header';
+                shelfHeader.innerHTML = `
+                    <h4><i class="fas fa-layer-group" style="color:var(--accent);font-size:.8rem;"></i> ${shelf.name.value}</h4>
+                    <div class="shelf-actions">
+                        <button class="btn-edit" onclick="editShelf('${shelfId}')"><i class="fas fa-pen"></i> Edit</button>
+                        <button class="btn-primary" style="padding:.28rem .65rem;font-size:.78rem;" onclick="addProductToShelf('${shelfId}')"><i class="fas fa-plus"></i> Add Product</button>
+                    </div>`;
+                div.appendChild(shelfHeader);
 
                 const progressWrapper = document.createElement('div');
                 progressWrapper.className = 'progress-bar';
@@ -1015,7 +1197,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     row.appendChild(imageCell);
 
                     const nameCell = document.createElement('td');
-                    nameCell.textContent = product.name.value;
+                    nameCell.textContent = window.tProduct(product.name.value);
                     row.appendChild(nameCell);
 
                     const priceCell = document.createElement('td');
@@ -1025,7 +1207,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     row.appendChild(priceCell);
 
                     const sizeCell = document.createElement('td');
-                    sizeCell.textContent = product.size.value;
+                    sizeCell.textContent = window.tSize(product.size.value);
                     row.appendChild(sizeCell);
 
                     const colorCell = document.createElement('td');
@@ -1051,7 +1233,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const actionCell = document.createElement('td');
                     const buyButton = document.createElement('button');
-                    buyButton.textContent = 'Buy One';
+                    buyButton.className = 'btn-buy';
+                    buyButton.innerHTML = '<i class="fas fa-shopping-cart"></i> Buy';
                     buyButton.onclick = () => buyOne(item.id);
                     actionCell.appendChild(buyButton);
                     row.appendChild(actionCell);
