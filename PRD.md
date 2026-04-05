@@ -18,8 +18,14 @@
 - [x] Stores Map view at /stores-map
 - [x] Employee Add/Edit modal form with JS validation and PATCH/POST API
 - [x] Shelf Add/Edit modal form with PATCH/POST API
-- [x] Client-side i18n system with translation dictionary and data-i18n tagging
+- [x] Client-side i18n tagging (data-i18n) applied to all templates
+- [x] Employee model upgraded with image attribute
+- [x] Real images and flags linked in initial data loadion dictionary and data-i18n tagging
+- [x] National flag icons (flag-icons library) integrated into Store views
+- [x] load_initial_data.py safe for multiple runs (delete_all_entities)
 - [x] Client-side EN/ES i18n system implemented with instant switching
+- [x] High-quality real images for all entities (Stores, Products, Employees)
+- [x] Automated entity cleanup in initial data script to prevent duplicates
 
 
 ## 1. Overview
