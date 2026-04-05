@@ -12,11 +12,13 @@
 - [x] Store list and detail views implemented with maps and 3D tours
 - [x] Product list view with color squares and delete buttons
 - [x] Employee list view with icons and delete buttons
+- [x] Employee Add/Edit modal form with validation
 - [x] Product detail view with inventory grouped by store/shelf and add-to-shelf functionality
 - [x] Active nav link highlighting in navbar
 - [x] Stores Map view at /stores-map
 - [x] Product Add/Edit modal form with validation
 - [x] Store Add/Edit modal form with validation
+- [x] Employee Add/Edit modal form with validation
 
 
 ## 1. Overview
@@ -128,9 +130,9 @@
 - [x] Category displays with appropriate Font Awesome icon
 - [x] Skills display with icons per skill type
 - [x] Employee photos zoom on hover with CSS transition
-- [ ] New employees can be created with validation
-- [ ] Employee details can be edited
-- [ ] Employees can be deleted with confirmation
+- [x] New employees can be created with validation
+- [x] Employee details can be edited
+- [x] Employees can be deleted with confirmation
 - [ ] Notifications for stock levels are functional
 
 ---

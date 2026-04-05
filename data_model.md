@@ -13,6 +13,7 @@
 - [x] Stores Map view at /stores-map
 - [x] Product Add/Edit modal form — ID always read-only, other attributes editable
 - [x] Store Add/Edit modal form — ID generated on create, editable attrs updated via PATCH
+- [x] Employee Add/Edit modal form — ID generated on create, editable attrs updated via PATCH
 - [x] Shelf name resolution from IDs
 
 ## 1. UML Entity Diagram

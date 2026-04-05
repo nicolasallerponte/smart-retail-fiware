@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadProductDetail(productId);
     } else if (pathname === '/employees') {
         loadEmployees();
+        initEmployeeModal();
     }
 
     async function loadStores() {
@@ -436,13 +437,152 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td><i class="${categoryIcon(category)}"></i> ${category}</td>
                     <td>${skillHtml || '<span style="color:#aaa;">No skills</span>'}</td>
                     <td>${storeName}</td>
-                    <td><button onclick="deleteEmployee('${emp.id}')">Delete</button></td>
+                    <td>
+                        <button onclick="editEmployee('${emp.id}')">Edit</button>
+                        <button onclick="deleteEmployee('${emp.id}')">Delete</button>
+                    </td>
                 `;
                 tbody.appendChild(row);
             });
         } catch (err) {
             console.error('Error loading employees:', err);
         }
+    }
+
+    function initEmployeeModal() {
+        const modal        = document.getElementById('employee-modal');
+        const form         = document.getElementById('employee-form');
+        const titleEl      = document.getElementById('employee-modal-title');
+        const idInput      = document.getElementById('employee-form-id');
+        const nameInput    = document.getElementById('employee-form-name');
+        const userInput    = document.getElementById('employee-form-username');
+        const emailInput   = document.getElementById('employee-form-email');
+        const passInput    = document.getElementById('employee-form-password');
+        const dateInput    = document.getElementById('employee-form-dateOfContract');
+        const catSelect    = document.getElementById('employee-form-category');
+        const storeSelect  = document.getElementById('employee-form-refStore');
+        const imgInput     = document.getElementById('employee-form-image');
+        const errorEl      = document.getElementById('employee-form-error');
+        const addBtn       = document.getElementById('add-employee-btn');
+        const cancelBtn    = document.getElementById('employee-form-cancel');
+
+        if (!modal || !addBtn) return;
+
+        function openModal()  { modal.removeAttribute('hidden'); }
+        function closeModal() { modal.setAttribute('hidden', ''); errorEl.textContent = ''; }
+
+        async function populateStores(selectedId = '') {
+            try {
+                const stores = await fetch('/api/stores').then(r => r.json());
+                storeSelect.innerHTML = '<option value="">Select a store...</option>';
+                stores.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = s.name.value;
+                    if (s.id === selectedId) opt.selected = true;
+                    storeSelect.appendChild(opt);
+                });
+            } catch (err) { console.error('Error fetching stores for modal:', err); }
+        }
+
+        addBtn.addEventListener('click', async function () {
+            titleEl.textContent = 'Add Employee';
+            form.reset();
+            idInput.value = '';
+            await populateStores();
+            openModal();
+        });
+
+        cancelBtn.addEventListener('click', closeModal);
+
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) closeModal();
+        });
+
+        window.editEmployee = async function (empId) {
+            try {
+                const emp = await fetch('/api/employees/' + encodeURIComponent(empId)).then(r => r.json());
+                titleEl.textContent = 'Edit Employee';
+                idInput.value       = emp.id;
+                nameInput.value     = emp.name ? emp.name.value : '';
+                userInput.value     = emp.username ? emp.username.value : '';
+                emailInput.value    = emp.email ? emp.email.value : '';
+                passInput.value     = emp.password ? emp.password.value : ''; // Note: usually shouldn't inhabit form
+                dateInput.value     = emp.dateOfContract ? emp.dateOfContract.value : '';
+                catSelect.value     = emp.category ? emp.category.value : 'Operator';
+                imgInput.value      = emp.image ? emp.image.value : '';
+
+                // Skills checkboxes
+                const currentSkills = (emp.skills && Array.isArray(emp.skills.value)) ? emp.skills.value : [];
+                document.querySelectorAll('input[name="skills"]').forEach(cb => {
+                    cb.checked = currentSkills.includes(cb.value);
+                });
+
+                await populateStores(emp.refStore ? emp.refStore.value : '');
+                openModal();
+            } catch (err) { console.error('Error fetching employee for edit:', err); }
+        };
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            errorEl.textContent = '';
+
+            const name     = nameInput.value.trim();
+            const username = userInput.value.trim();
+            const email    = emailInput.value.trim();
+            const pass     = passInput.value.trim();
+            const date     = dateInput.value;
+            const cat      = catSelect.value;
+            const store    = storeSelect.value;
+            const img      = imgInput.value.trim();
+            
+            const skills = Array.from(document.querySelectorAll('input[name="skills"]:checked')).map(cb => cb.value);
+
+            // Validation
+            if (!name || !username || !email || !pass || !date || !cat || !store || !img) {
+                errorEl.textContent = 'Please fill all required fields.';
+                return;
+            }
+            if (skills.length === 0) {
+                errorEl.textContent = 'Please select at least one skill.';
+                return;
+            }
+
+            const empId = idInput.value;
+            const isEdit = Boolean(empId);
+
+            const body = isEdit ? {
+                name:           { type: 'String', value: name },
+                username:       { type: 'String', value: username },
+                email:          { type: 'String', value: email },
+                password:       { type: 'String', value: pass },
+                dateOfContract: { type: 'String', value: date },
+                category:       { type: 'String', value: cat },
+                refStore:       { type: 'Relationship', value: store },
+                skills:         { type: 'Array', value: skills },
+                image:          { type: 'String', value: img }
+            } : {
+                name, username, email, password: pass, dateOfContract: date,
+                category: cat, refStore: store, skills, image: img
+            };
+
+            const apiUrl = isEdit ? '/api/employees/' + encodeURIComponent(empId) : '/api/employees';
+            const method = isEdit ? 'PATCH' : 'POST';
+
+            fetch(apiUrl, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            })
+            .then(r => {
+                if (!r.ok) return r.text().then(t => { throw new Error(t); });
+                closeModal();
+                loadEmployees();
+            })
+            .catch(err => {
+                errorEl.textContent = 'Error saving employee: ' + err.message;
+            });
+        });
     }
 
     async function deleteProduct(productId) {
