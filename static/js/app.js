@@ -10,18 +10,85 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('theme-toggle');
     const langSelector = document.getElementById('lang-selector');
 
+    const TRANSLATIONS = {
+        en: {
+            nav: { products: "Products", stores: "Stores", employees: "Employees", map: "Stores Map" },
+            common: { edit: "Edit", delete: "Delete", save: "Save", cancel: "Cancel", add: "Add", buy_one: "Buy One", na: "N/A" },
+            pages: {
+                home: { title: "Welcome to Smart Retail FIWARE", desc: "This application is implemented with Flask and FIWARE NGSIv2 for real-time inventory management.", uml: "UML Entity Diagram" },
+                products: { title: "Products", add: "Add Product" },
+                stores: { title: "Stores", add: "Create New Store" },
+                employees: { title: "Employees", add: "Add Employee" },
+                store_detail: { title: "Store Detail", inventory: "Inventory", tweets: "Latest Tweets", notifications: "Notifications", add_shelf: "Add New Shelf" },
+                product_detail: { title: "Product Detail", add_to_shelf: "Add to existing store shelf:", inventory_by_store: "Inventory by Store / Shelf" },
+                stores_map: { title: "Stores Map" }
+            },
+            table: { image: "Image", name: "Name", price: "Price", size: "Size", color: "Color", actions: "Actions", country: "Country", temp: "Temperature", humidity: "Humidity", photo: "Photo", category: "Category", skills: "Skills", store: "Store", stock: "Stock", shelf: "Shelf", level: "Level" },
+            forms: { name: "Name", price: "Price (€)", size: "Size", color: "Color", image_url: "Image URL", telephone: "Telephone", website_url: "Website URL", country_code: "Country Code", capacity: "Capacity", description: "Description", temp_readonly: "Temperature (°C) - Read Only", hum_readonly: "Relative Humidity (%) - Solo lectura", username: "Username", email: "Email", password: "Password", date_contract: "Date of Contract", store: "Store", skills: "Skills", skill_machinery: "Mach. Driving", skill_reports: "Writing Reports", skill_relations: "Cust. Relations", shelf_name: "Shelf Name", level: "Level", image_optional: "Image URL (Optional)" },
+            modals: { add_product: "Add Product", edit_product: "Edit Product", add_store: "Add Store", edit_store: "Edit Store", add_employee: "Add Employee", edit_employee: "Edit Employee", add_shelf: "Add Shelf", edit_shelf: "Edit Shelf" },
+            messages: { 
+                confirm_delete_store: "Are you sure you want to delete this store?", 
+                confirm_delete_product: "Are you sure you want to delete this product?", 
+                confirm_delete_employee: "Are you sure you want to delete this employee?", 
+                confirm_delete_shelf: "Are you sure you want to delete this shelf?", 
+                low_stock_alert: "Low stock alert: Product {prod} in Store {store} has {count} units",
+                invalid_shelf_error: "Please provide a valid name and level."
+            }
+        },
+        es: {
+            nav: { products: "Productos", stores: "Tiendas", employees: "Empleados", map: "Mapa de Tiendas" },
+            common: { edit: "Editar", delete: "Eliminar", save: "Guardar", cancel: "Cancelar", add: "Añadir", buy_one: "Comprar uno", na: "N/A" },
+            pages: {
+                home: { title: "Bienvenido a Smart Retail FIWARE", desc: "Esta aplicación está implementada con Flask y FIWARE NGSIv2 para la gestión de inventario en tiempo real.", uml: "Diagrama de Entidades UML" },
+                products: { title: "Productos", add: "Añadir Producto" },
+                stores: { title: "Tiendas", add: "Crear Nueva Tienda" },
+                employees: { title: "Empleados", add: "Añadir Empleado" },
+                store_detail: { title: "Detalle de Tienda", inventory: "Inventario", tweets: "Últimos Tweets", notifications: "Notificaciones", add_shelf: "Añadir Nueva Estantería" },
+                product_detail: { title: "Detalle del Producto", add_to_shelf: "Añadir a estantería de tienda existente:", inventory_by_store: "Inventario por Tienda / Estantería" },
+                stores_map: { title: "Mapa de Tiendas" }
+            },
+            table: { image: "Imagen", name: "Nombre", price: "Precio", size: "Talla", color: "Color", actions: "Acciones", country: "País", temp: "Temperatura", humidity: "Humedad", photo: "Foto", category: "Categoría", skills: "Habilidades", store: "Tienda", stock: "Existencias", shelf: "Estantería", level: "Nivel" },
+            forms: { name: "Nombre", price: "Precio (€)", size: "Talla", color: "Color", image_url: "URL de Imagen", telephone: "Teléfono", website_url: "URL del Sitio Web", country_code: "Código de País", capacity: "Capacidad", description: "Descripción", temp_readonly: "Temperatura (°C) - Solo lectura", hum_readonly: "Humedad Relativa (%) - Solo lectura", username: "Nombre de usuario", email: "Correo electrónico", password: "Contraseña", date_contract: "Fecha de contrato", store: "Tienda", skills: "Habilidades", skill_machinery: "Conducción Maquinaria", skill_reports: "Redacción de Informes", skill_relations: "Relaciones con Clientes", shelf_name: "Nombre de Estantería", level: "Nivel", image_optional: "URL de Imagen (Opcional)" },
+            modals: { add_product: "Añadir Producto", edit_product: "Editar Producto", add_store: "Añadir Tienda", edit_store: "Editar Tienda", add_employee: "Añadir Empleado", edit_employee: "Editar Empleado", add_shelf: "Añadir Estantería", edit_shelf: "Editar Estantería" },
+            messages: { 
+                confirm_delete_store: "¿Estás seguro de que quieres eliminar esta tienda?", 
+                confirm_delete_product: "¿Estás seguro de que quieres eliminar este producto?", 
+                confirm_delete_employee: "¿Estás seguro de que quieres eliminar este empleado?", 
+                confirm_delete_shelf: "¿Estás seguro de que quieres eliminar esta estantería?", 
+                low_stock_alert: "Alerta de stock bajo: El producto {prod} en la tienda {store} tiene {count} unidades",
+                invalid_shelf_error: "Por favor, introduzca un nombre y un nivel válidos."
+            }
+        }
+    };
+
+    window.t = function(key, params = {}) {
+        const lang = localStorage.getItem('lang') || 'en';
+        let translation = key.split('.').reduce((obj, k) => obj && obj[k], TRANSLATIONS[lang]) || key;
+        for (const p in params) {
+            translation = translation.replace(`{${p}}`, params[p]);
+        }
+        return translation;
+    };
+
     function setTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);
     }
 
-    function setLanguage(lang) {
+    function applyTranslations(lang) {
         localStorage.setItem('lang', lang);
-        if (lang === 'es') {
-            document.documentElement.lang = 'es';
-        } else {
-            document.documentElement.lang = 'en';
-        }
+        document.documentElement.lang = lang;
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            const translation = window.t(key);
+            if (el.tagName === 'INPUT' && (['text','email','password','url','number'].includes(el.type))) {
+                el.placeholder = translation;
+            } else if (el.tagName === 'TEXTAREA') {
+                el.placeholder = translation;
+            } else {
+                el.textContent = translation;
+            }
+        });
     }
 
     const savedTheme = localStorage.getItem('theme') || 'light';
@@ -30,15 +97,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const savedLanguage = localStorage.getItem('lang') || 'en';
     langSelector.value = savedLanguage;
-    setLanguage(savedLanguage);
+    applyTranslations(savedLanguage);
 
     themeToggle.addEventListener('change', (e) => {
         setTheme(e.target.checked ? 'dark' : 'light');
     });
 
     langSelector.addEventListener('change', (e) => {
-        setLanguage(e.target.value);
-        location.reload();
+        applyTranslations(e.target.value);
+        // Refresh dynamic content if any
+        location.reload(); 
     });
 
     // Socket.IO connection for real-time notifications
@@ -55,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update stock count in store views
         updateInventoryStock(data.inventoryItemId, data.stockCount);
         // Show notification
-        showNotification(`Low stock alert: Product ${data.productId} in Store ${data.storeId} has ${data.stockCount} units`);
+        showNotification(window.t('messages.low_stock_alert', { prod: data.productId, store: data.storeId, count: data.stockCount }));
     });
 
     // Page-specific logic
@@ -91,11 +159,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td><img src="${store.image.value}" alt="${store.name.value}" width="50"></td>
                     <td><a href="/stores/${storeKey}">${store.name.value}</a></td>
                     <td><i class="fi fi-${store.countryCode.value.toLowerCase()}"></i> ${store.countryCode.value}</td>
-                    <td class="temp">${store.temperature ? store.temperature.value + '°C' : 'N/A'}</td>
-                    <td class="humidity">${store.relativeHumidity ? store.relativeHumidity.value + '%' : 'N/A'}</td>
+                    <td class="temp">${store.temperature ? store.temperature.value + '°C' : window.t('common.na')}</td>
+                    <td class="humidity">${store.relativeHumidity ? store.relativeHumidity.value + '%' : window.t('common.na')}</td>
                     <td>
-                        <button onclick="editStore('${store.id}')">Edit</button>
-                        <button onclick="deleteStore('${store.id}')">Delete</button>
+                        <button onclick="editStore('${store.id}')">${window.t('common.edit')}</button>
+                        <button onclick="deleteStore('${store.id}')">${window.t('common.delete')}</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -144,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
         function closeModal() { modal.setAttribute('hidden', ''); errorEl.textContent = ''; }
 
         createBtn.addEventListener('click', function () {
-            titleEl.textContent  = 'Add Store';
+            titleEl.textContent  = window.t('modals.add_store');
             idInput.value        = '';
             nameInput.value      = '';
             telInput.value       = '';
@@ -168,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fetch('/api/stores/' + encodeURIComponent(storeId))
                 .then(r => r.json())
                 .then(store => {
-                    titleEl.textContent = 'Edit Store';
+                    titleEl.textContent = window.t('modals.edit_store');
                     idInput.value       = store.id;
                     nameInput.value     = store.name ? store.name.value : '';
                     telInput.value      = store.telephone ? store.telephone.value : '';
@@ -185,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         window.deleteStore = function (storeId) {
-            if (!confirm('Are you sure you want to delete this store?')) return;
+            if (!confirm(window.t('messages.confirm_delete_store'))) return;
             fetch('/api/stores/' + encodeURIComponent(storeId), { method: 'DELETE' })
                 .then(r => {
                     if (!r.ok) throw new Error('Delete failed');
@@ -267,8 +335,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${product.size.value}</td>
                     <td><span class="color-box" style="background:${product.color.value}; width: 16px; height: 16px; display:inline-block; border: 1px solid #000;"></span></td>
                     <td>
-                        <button onclick="editProduct('${product.id}')">Edit</button>
-                        <button onclick="deleteProduct('${product.id}')">Delete</button>
+                        <button onclick="editProduct('${product.id}')">${window.t('common.edit')}</button>
+                        <button onclick="deleteProduct('${product.id}')">${window.t('common.delete')}</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -300,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Open modal in create mode
         addBtn.addEventListener('click', function () {
-            titleEl.textContent  = 'Add Product';
+            titleEl.textContent  = window.t('modals.add_product');
             idInput.value        = '';
             nameInput.value      = '';
             priceInput.value     = '';
@@ -435,12 +503,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.innerHTML = `
                     <td><img class="employee-img" src="${photo}" alt="${name}" width="50" height="50"></td>
                     <td>${name}</td>
-                    <td><i class="${categoryIcon(category)}"></i> ${category}</td>
-                    <td>${skillHtml || '<span style="color:#aaa;">No skills</span>'}</td>
+                    <td><i class="${categoryIcon(category)}"></i> ${emp.category ? emp.category.value : window.t('common.na')}</td>
+                    <td>${emp.skills ? emp.skills.value.join(', ') : window.t('common.na')}</td>
                     <td>${storeName}</td>
                     <td>
-                        <button onclick="editEmployee('${emp.id}')">Edit</button>
-                        <button onclick="deleteEmployee('${emp.id}')">Delete</button>
+                        <button onclick="editEmployee('${emp.id}')">${window.t('common.edit')}</button>
+                        <button onclick="deleteEmployee('${emp.id}')">${window.t('common.delete')}</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -475,7 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
         async function populateStores(selectedId = '') {
             try {
                 const stores = await fetch('/api/stores').then(r => r.json());
-                storeSelect.innerHTML = '<option value="">Select a store...</option>';
+                storeSelect.innerHTML = `<option value="">${window.t('forms.select_store')}</option>`;
                 stores.forEach(s => {
                     const opt = document.createElement('option');
                     opt.value = s.id;
@@ -487,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         addBtn.addEventListener('click', async function () {
-            titleEl.textContent = 'Add Employee';
+            titleEl.textContent = window.t('modals.add_employee');
             form.reset();
             idInput.value = '';
             await populateStores();
@@ -503,7 +571,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.editEmployee = async function (empId) {
             try {
                 const emp = await fetch('/api/employees/' + encodeURIComponent(empId)).then(r => r.json());
-                titleEl.textContent = 'Edit Employee';
+                titleEl.textContent = window.t('modals.edit_employee');
                 idInput.value       = emp.id;
                 nameInput.value     = emp.name ? emp.name.value : '';
                 userInput.value     = emp.username ? emp.username.value : '';
@@ -760,7 +828,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loadInventory(storeId);
             // Add shelf button
             document.getElementById('add-shelf-btn').onclick = () => {
-                document.getElementById('shelf-modal-title').textContent = 'Add Shelf';
+                document.getElementById('shelf-modal-title').textContent = window.t('modals.add_shelf');
                 document.getElementById('shelf-form-id').value = '';
                 document.getElementById('shelf-form-storeId').value = `urn:ngsi-ld:Store:${storeId}`;
                 document.getElementById('shelf-form-name').value = '';
@@ -1029,7 +1097,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const image = document.getElementById('shelf-form-image').value.trim();
 
             if (!name || isNaN(level) || level < 0) {
-                errorEl.textContent = 'Please provide a valid name and level.';
+                errorEl.textContent = window.t('forms.invalid_shelf_error') || 'Invalid name or level';
                 return;
             }
 
@@ -1069,7 +1137,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const shelf = await fetch(`/api/shelves/${encodeURIComponent(shelfId)}`).then(r => r.json());
             const modal = document.getElementById('shelf-modal');
             if (!modal) return;
-            document.getElementById('shelf-modal-title').textContent = 'Edit Shelf';
+            document.getElementById('shelf-modal-title').textContent = window.t('modals.edit_shelf');
             document.getElementById('shelf-form-id').value = shelf.id;
             document.getElementById('shelf-form-storeId').value = shelf.storeId ? shelf.storeId.value : '';
             document.getElementById('shelf-form-name').value = shelf.name ? shelf.name.value : '';
@@ -1121,7 +1189,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateProductPrice(productId, newPrice) {
-        // Update price in all elements with data-product-id
         const priceElements = document.querySelectorAll(`[data-product-id="${productId}"]`);
         priceElements.forEach(el => {
             el.textContent = `€${newPrice}`;

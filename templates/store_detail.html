@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <section>
-  <h1>Store Detail</h1>
+  <h1 data-i18n="pages.store_detail.title">Store Detail</h1>
   <div id="store-info">
     <img id="store-image" src="" alt="Store" class="warehouse-photo" />
     <h2 id="store-name"></h2>
@@ -16,20 +16,20 @@
   
   <div id="3d-tour" style="height: 400px;"></div>
   
-  <button id="add-shelf-btn">Add New Shelf</button>
+  <button id="add-shelf-btn" data-i18n="pages.store_detail.add_shelf">Add New Shelf</button>
   
   <div id="inventory">
-    <h3>Inventory</h3>
+    <h3 data-i18n="pages.store_detail.inventory">Inventory</h3>
     <div id="inventory-content"></div>
   </div>
   
   <div id="tweets">
-    <h3><i class="fab fa-twitter"></i> Latest Tweets</h3>
+    <h3><i class="fab fa-twitter"></i> <span data-i18n="pages.store_detail.tweets">Latest Tweets</span></h3>
     <div id="tweets-content"></div>
   </div>
   
   <div id="notifications-panel">
-    <h3>Notifications</h3>
+    <h3 data-i18n="pages.store_detail.notifications">Notifications</h3>
     <ul id="notifications-list"></ul>
   </div>
 </section>
@@ -39,31 +39,31 @@
 <!-- Shelf Add/Edit Modal -->
 <div id="shelf-modal" class="modal-overlay" hidden>
   <div class="modal-content">
-    <h2 id="shelf-modal-title">Add Shelf</h2>
+    <h2 id="shelf-modal-title" data-i18n="modals.add_shelf">Add Shelf</h2>
     <form id="shelf-form" novalidate>
       <input type="hidden" id="shelf-form-id" />
       <input type="hidden" id="shelf-form-storeId" />
       
       <div class="form-group">
-        <label for="shelf-form-name">Shelf Name</label>
-        <input type="text" id="shelf-form-name" placeholder="e.g. A1" required />
+        <label for="shelf-form-name" data-i18n="forms.shelf_name">Shelf Name</label>
+        <input type="text" id="shelf-form-name" data-i18n="forms.shelf_name" placeholder="e.g. A1" required />
       </div>
       
       <div class="form-group">
-        <label for="shelf-form-level">Level</label>
-        <input type="number" id="shelf-form-level" min="0" placeholder="0" required />
+        <label for="shelf-form-level" data-i18n="forms.level">Level</label>
+        <input type="number" id="shelf-form-level" min="0" data-i18n="forms.level" placeholder="0" required />
       </div>
       
       <div class="form-group">
-        <label for="shelf-form-image">Image URL (Optional)</label>
-        <input type="url" id="shelf-form-image" placeholder="https://example.com/shelf.jpg" />
+        <label for="shelf-form-image" data-i18n="forms.image_optional">Image URL (Optional)</label>
+        <input type="url" id="shelf-form-image" data-i18n="forms.image_optional" placeholder="https://example.com/shelf.jpg" />
       </div>
 
       <div id="shelf-form-error" class="form-error"></div>
       
       <div class="form-actions">
-        <button type="button" id="shelf-form-cancel">Cancel</button>
-        <button type="submit" id="shelf-form-submit">Save</button>
+        <button type="button" id="shelf-form-cancel" data-i18n="common.cancel">Cancel</button>
+        <button type="submit" id="shelf-form-submit" data-i18n="common.save">Save</button>
       </div>
     </form>
   </div>
