@@ -41,6 +41,17 @@ body {
 
 .nav-logo { font-weight: bold; margin-right: 1rem; }
 
+/* Active nav link */
+.nav-link.active {
+    border-bottom: 2px solid var(--navtext);
+    font-weight: bold;
+    opacity: 1;
+}
+
+.nav-link:not(.active) {
+    opacity: 0.65;
+}
+
 .content {
     padding: 1rem;
 }

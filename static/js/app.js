@@ -1,4 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Highlight the active nav link
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.nav-link').forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.classList.add('active');
+        }
+    });
+
     const themeToggle = document.getElementById('theme-toggle');
     const langSelector = document.getElementById('lang-selector');
 
