@@ -798,33 +798,116 @@ document.addEventListener('DOMContentLoaded', () => {
     function init3D(storeId) {
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, 400 / 400, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer();
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(400, 400);
-        document.getElementById('3d-tour').appendChild(renderer.domElement);
-        const light = new THREE.AmbientLight(0x404040);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        const container = document.getElementById('3d-tour');
+        container.innerHTML = ''; // Clear previous
+        container.appendChild(renderer.domElement);
+
+        // CSS2D Labels
+        const labelRenderer = new THREE.CSS2DRenderer();
+        labelRenderer.setSize(400, 400);
+        labelRenderer.style.position = 'absolute';
+        labelRenderer.style.top = '0px';
+        labelRenderer.style.pointerEvents = 'none';
+        container.appendChild(labelRenderer.domElement);
+
+        const light = new THREE.AmbientLight(0x404040, 1.2);
         scene.add(light);
-        camera.position.z = 5;
+        const pointLight = new THREE.PointLight(0xffffff, 0.8);
+        pointLight.position.set(5, 5, 5);
+        scene.add(pointLight);
+
+        camera.position.set(0, 2, 5);
+        camera.lookAt(0, 0, 0);
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        const interactables = [];
+
         fetch(`/api/shelves?storeId=urn:ngsi-ld:Store:${storeId}`).then(r => r.json()).then(shelves => {
             shelves.forEach((shelf, i) => {
                 const geometry = new THREE.BoxGeometry(1, 0.5, 0.5);
-                const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
+                const material = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
                 const cube = new THREE.Mesh(geometry, material);
-                cube.position.set(i * 1.2 - 2, shelf.level.value * 0.6, 0);
+                cube.position.set(i * 1.5 - (shelves.length * 0.75), shelf.level.value * 0.8, 0);
+                cube.userData = { type: 'shelf', id: shelf.id };
                 scene.add(cube);
-                fetch(`/api/inventoryitems?shelfId=${shelf.id}`).then(r => r.json()).then(items => {
+                interactables.push(cube);
+
+                // Label
+                const labelDiv = document.createElement('div');
+                labelDiv.className = 'shelf-label';
+                labelDiv.textContent = shelf.name.value;
+                labelDiv.style.color = 'white';
+                labelDiv.style.background = 'rgba(0,0,0,0.6)';
+                labelDiv.style.padding = '2px 5px';
+                labelDiv.style.borderRadius = '3px';
+                labelDiv.style.fontSize = '10px';
+                const label = new THREE.CSS2DObject(labelDiv);
+                label.position.set(0, 0.4, 0);
+                cube.add(label);
+
+                fetch(`/api/inventoryitems?shelfId=${encodeURIComponent(shelf.id)}`).then(r => r.json()).then(items => {
                     items.forEach((item, j) => {
                         const smallGeo = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-                        const smallMat = new THREE.MeshBasicMaterial({color: 0xff0000});
+                        const smallMat = new THREE.MeshPhongMaterial({ color: 0xff0000 });
                         const smallCube = new THREE.Mesh(smallGeo, smallMat);
-                        smallCube.position.set(i * 1.2 - 2 + j * 0.3, shelf.level.value * 0.6, 0);
-                        scene.add(smallCube);
+                        smallCube.position.set(j * 0.25 - 0.35, 0.35, 0);
+                        smallCube.userData = { 
+                            type: 'product', 
+                            name: item.productId.value.split(':').pop(), 
+                            stock: item.stockCount.value 
+                        };
+                        cube.add(smallCube);
+                        interactables.push(smallCube);
                     });
                 });
             });
         });
+
+        const tooltip = document.createElement('div');
+        tooltip.style.position = 'absolute';
+        tooltip.style.background = 'rgba(0,0,0,0.8)';
+        tooltip.style.color = 'white';
+        tooltip.style.padding = '5px';
+        tooltip.style.borderRadius = '4px';
+        tooltip.style.fontSize = '12px';
+        tooltip.style.display = 'none';
+        tooltip.style.pointerEvents = 'none';
+        tooltip.style.zIndex = '10000';
+        document.body.appendChild(tooltip);
+
+        container.addEventListener('click', (event) => {
+            const rect = container.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(interactables);
+
+            if (intersects.length > 0) {
+                const obj = intersects[0].object;
+                if (obj.userData.type === 'shelf') {
+                    const sectionId = `shelf-section-${obj.userData.id}`;
+                    const el = document.getElementById(sectionId);
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                } else if (obj.userData.type === 'product') {
+                    tooltip.innerHTML = `<strong>${obj.userData.name}</strong><br>Stock: ${obj.userData.stock}`;
+                    tooltip.style.left = event.pageX + 10 + 'px';
+                    tooltip.style.top = event.pageY + 10 + 'px';
+                    tooltip.style.display = 'block';
+                    setTimeout(() => { tooltip.style.display = 'none'; }, 2000);
+                }
+            }
+        });
+
         function animate() {
             requestAnimationFrame(animate);
             renderer.render(scene, camera);
+            labelRenderer.render(scene, camera);
         }
         animate();
     }
@@ -843,14 +926,14 @@ document.addEventListener('DOMContentLoaded', () => {
             content.innerHTML = '';
             for (const shelfId in byShelf) {
                 const shelfItems = byShelf[shelfId];
-                const shelfKey = shelfId.split(':')[3] || shelfId.split(':')[2] || shelfId;
-                const shelfRes = await fetch(`/api/shelves/${encodeURIComponent(shelfKey)}`);
+                const shelfRes = await fetch(`/api/shelves/${encodeURIComponent(shelfId)}`);
                 const shelf = await shelfRes.json();
                 const totalShelfCount = shelfItems.reduce((sum, item) => sum + item.shelfCount.value, 0);
                 const maxCapacity = 100;
                 const fillPercent = Math.min((totalShelfCount / maxCapacity) * 100, 100);
                 const color = fillPercent < 25 ? 'red' : fillPercent <= 75 ? 'yellow' : 'green';
                 const div = document.createElement('div');
+                div.id = `shelf-section-${shelfId}`;
                 const title = document.createElement('h4');
                 title.innerHTML = `${shelf.name.value} <button onclick="editShelf('${shelfId}')">Edit</button> <button onclick="addProductToShelf('${shelfId}')">Add Product</button>`;
                 div.appendChild(title);
@@ -871,11 +954,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tbody = document.createElement('tbody');
 
                 for (const item of shelfItems) {
-                    const prodKey = item.productId.value.split(':')[3] || item.productId.value.split(':')[2] || item.productId.value;
-                    const prodRes = await fetch(`/api/products/${encodeURIComponent(prodKey)}`);
+                    const prodRes = await fetch(`/api/products/${encodeURIComponent(item.productId.value)}`);
                     const product = await prodRes.json();
-                    const dataProductId = item.productId.value.split(':')[3] || item.productId.value.split(':')[2] || item.productId.value;
-                    const dataInventoryId = item.id.split(':')[3] || item.id.split(':')[2] || item.id;
+                    const dataProductId = item.productId.value;
+                    const dataInventoryId = item.id;
 
                     const row = document.createElement('tr');
                     const imageCell = document.createElement('td');
