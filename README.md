@@ -1,99 +1,99 @@
 # Smart Retail FIWARE 🛍️
 
-**Authors**: Jacobo Cousillas Taboada and Nicolás Aller Ponte  
-**Subject**: Gestión de Datos en Entornos Inteligentes — Práctica 2  
-**Repository**: [github.com/nicolasallerponte/smart-retail-fiware](https://github.com/nicolasallerponte/smart-retail-fiware)
+**Autores**: Jacobo Cousillas Taboada y Nicolás Aller Ponte  
+**Asignatura**: Gestión de Datos en Entornos Inteligentes — Práctica 2  
+**Repositorio**: [github.com/nicolasallerponte/smart-retail-fiware](https://github.com/nicolasallerponte/smart-retail-fiware)
 
 ---
 
-## 📖 Project Description
+## 📖 Descripción del Proyecto
 
-Smart Retail FIWARE is a modern management application for retail logistics and inventory, leveraging the FIWARE ecosystem. It provides real-time monitoring and control of products, stores, and employees using standard NGSIv2 protocols.
+Smart Retail FIWARE es una aplicación moderna de gestión logística e inventario para el sector retail, utilizando el ecosistema FIWARE. Permite la monitorización y control en tiempo real de productos, tiendas y empleados mediante protocolos estándar NGSIv2.
 
-### Main Technologies
+### Tecnologías Principales
 - **Backend**: Python 3.10+, Flask
-- **Real-time**: FIWARE Orion Context Broker (NGSIv2), Flask-SocketIO (WebSocket)
-- **Data Persistence**: MongoDB (as Orion's peristence layer)
-- **Visualization**: Leaflet.js (2D Maps), Three.js (3D Store Tour), Mermaid.js (UML)
-- **Localization**: Pure JavaScript client-side i18n (English/Spanish)
-- **Containerization**: Docker & Docker Compose
+- **Tiempo Real**: FIWARE Orion Context Broker (NGSIv2), Flask-SocketIO (WebSocket)
+- **Persistencia de Datos**: MongoDB (como capa de persistencia de Orion)
+- **Visualización**: Leaflet.js (Mapas 2D), Three.js (Tour 3D por la tienda), Mermaid.js (UML)
+- **Localización**: i18n pura en JavaScript (Inglés/Español)
+- **Contenedores**: Docker y Docker Compose
 
 ---
 
-## 🛠️ Prerequisites
+## 🛠️ Prerrequisitos
 
-Before you begin, ensure you have the following installed:
+Antes de comenzar, asegúrate de tener instalado:
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - [Python 3.10+](https://www.python.org/downloads/)
-- `pip` (Python package manager)
+- `pip` (gestor de paquetes de Python)
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Guía de Inicio Rápido
 
-Follow these steps to set up and run the application locally:
+Sigue estos pasos para configurar y ejecutar la aplicación localmente:
 
-1. **Clone the repository**:
+1. **Clonar el repositorio**:
    ```bash
    git clone https://github.com/nicolasallerponte/smart-retail-fiware.git
    cd smart-retail-fiware
    ```
 
-2. **Start Docker containers**:
-   Start Orion Context Broker, MongoDB, and Cygnus:
+2. **Iniciar contenedores Docker**:
+   Levanta Orion Context Broker, MongoDB y Cygnus:
    ```bash
    docker-compose up -d
    ```
 
-3. **Create and activate a virtual environment**:
+3. **Crear y activar un entorno virtual**:
    ```bash
    python -m venv venv
-   # On Windows:
+   # En Windows:
    .\venv\Scripts\activate
-   # On Linux/macOS:
+   # En Linux/macOS:
    source venv/bin/activate
    ```
 
-4. **Install dependencies**:
+4. **Instalar dependencias**:
    ```bash
    pip install -r requirements.txt
    ```
 
-5. **Load initial data**:
-   This script clears any existing Orion entities and populates the system with high-quality seed data and images:
+5. **Cargar datos iniciales**:
+   Este script elimina las entidades existentes en Orion y puebla el sistema con datos semilla, imágenes reales y banderas:
    ```bash
-   # On Windows (ensuring local imports work)
+   # En Windows (asegurando las importaciones locales)
    $env:PYTHONPATH="."
    python import-data/load_initial_data.py
    ```
 
-6. **Run the application**:
+6. **Ejecutar la aplicación**:
    ```bash
    python app.py
    ```
 
-7. **Open in browser**:
-   Navigate to [http://localhost:5000](http://localhost:5000) to access the dashboard.
+7. **Abrir en el navegador**:
+   Navega a [http://localhost:5000](http://localhost:5000) para acceder al panel de control.
 
 ---
 
-## 🖥️ Main Views
+## 🖥️ Vistas Principales
 
-- **🏠 Home**: Welcome page with a Mermaid-rendered UML Entity Diagram of the system.
-- **📦 Products**: CRUD management for items including status, pricing, and inventory.
-- **🏪 Stores**: Management of warehouse/retail locations with real-time temperature/humidity telemetry.
-- **👥 Employees**: Staff management with specific skills and role assignments.
-- **🗺️ Stores Map**: Interactive Leaflet map showing all physical store locations.
-- **🔍 Store Detail**: Advanced view featuring an interactive **Three.js 3D tour** of shelves and real-time inventory levels.
-
----
-
-## 🔔 Real-time Features
-
-- **Subscriptions**: The application registers NGSIv2 subscriptions in Orion to watch for attribute changes (e.g., `stockCount`, `price`).
-- **Socket.IO Notifications**: When Orion detects a change, it notifies the Flask backend, which pushes a real-time update to the browser via WebSocket.
-- **Dynamics**: Inventory bars and status messages update instantly without page reloads.
+- **🏠 Inicio**: Página de bienvenida con un diagrama de entidades UML renderizado con Mermaid.
+- **📦 Productos**: Gestión CRUD de artículos incluyendo estado, precios e inventario.
+- **🏪 Tiendas**: Gestión de almacenes y tiendas con telemetría de temperatura y humedad en tiempo real.
+- **👥 Empleados**: Gestión del personal con habilidades específicas y asignación a tiendas.
+- **🗺️ Mapa de Tiendas**: Mapa interactivo de Leaflet que muestra las ubicaciones físicas de todas las tiendas.
+- **🔍 Detalle de Tienda**: Vista avanzada con un **tour interactivo en 3D (Three.js)** de las estanterías y niveles de inventario en tiempo real.
 
 ---
 
-© 2026 Smart Retail FIWARE Project
+## 🔔 Funcionalidades en Tiempo Real
+
+- **Suscripciones**: La aplicación registra suscripciones NGSIv2 en Orion para vigilar cambios en atributos (ej. `stockCount`, `price`).
+- **Notificaciones Socket.IO**: Cuando Orion detecta un cambio, notifica al backend de Flask, que envía una actualización en tiempo real al navegador mediante WebSockets.
+- **Dinámica**: Las barras de inventario y mensajes de estado se actualizan instantáneamente sin recargar la página.
+
+---
+
+© 2026 Proyecto Smart Retail FIWARE
