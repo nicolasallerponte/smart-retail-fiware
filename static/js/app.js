@@ -62,9 +62,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const pathname = window.location.pathname;
     if (pathname === '/stores') {
         loadStores();
+        initStoreModal();
     } else if (pathname.startsWith('/stores/')) {
         const storeId = pathname.split('/')[2];
         loadStoreDetail(storeId);
+        initShelfModal();
     } else if (pathname === '/products') {
         loadProducts();
         initProductModal();
@@ -73,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadProductDetail(productId);
     } else if (pathname === '/employees') {
         loadEmployees();
+        initEmployeeModal();
     }
 
     async function loadStores() {
@@ -115,6 +118,136 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             console.error('Error loading stores:', err);
         }
+    }
+
+    function initStoreModal() {
+        const modal      = document.getElementById('store-modal');
+        const form       = document.getElementById('store-form');
+        const titleEl    = document.getElementById('store-modal-title');
+        const idInput    = document.getElementById('store-form-id');
+        const nameInput  = document.getElementById('store-form-name');
+        const telInput   = document.getElementById('store-form-telephone');
+        const urlInput   = document.getElementById('store-form-url');
+        const imgInput   = document.getElementById('store-form-image');
+        const countrySel = document.getElementById('store-form-countryCode');
+        const capInput   = document.getElementById('store-form-capacity');
+        const descText   = document.getElementById('store-form-description');
+        const tempInput  = document.getElementById('store-form-temperature');
+        const humInput   = document.getElementById('store-form-humidity');
+        const errorEl    = document.getElementById('store-form-error');
+        const createBtn  = document.getElementById('create-store-btn');
+        const cancelBtn  = document.getElementById('store-form-cancel');
+
+        if (!modal || !createBtn) return;
+
+        function openModal()  { modal.removeAttribute('hidden'); }
+        function closeModal() { modal.setAttribute('hidden', ''); errorEl.textContent = ''; }
+
+        createBtn.addEventListener('click', function () {
+            titleEl.textContent  = 'Add Store';
+            idInput.value        = '';
+            nameInput.value      = '';
+            telInput.value       = '';
+            urlInput.value       = '';
+            imgInput.value       = '';
+            countrySel.value     = 'ES';
+            capInput.value       = '0';
+            descText.value       = '';
+            tempInput.value      = '';
+            humInput.value       = '';
+            openModal();
+        });
+
+        cancelBtn.addEventListener('click', closeModal);
+
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) closeModal();
+        });
+
+        window.editStore = function (storeId) {
+            fetch('/api/stores/' + encodeURIComponent(storeId))
+                .then(r => r.json())
+                .then(store => {
+                    titleEl.textContent = 'Edit Store';
+                    idInput.value       = store.id;
+                    nameInput.value     = store.name ? store.name.value : '';
+                    telInput.value      = store.telephone ? store.telephone.value : '';
+                    urlInput.value      = store.url ? store.url.value : '';
+                    imgInput.value      = store.image ? store.image.value : '';
+                    countrySel.value    = store.countryCode ? store.countryCode.value : 'ES';
+                    capInput.value      = store.capacity ? store.capacity.value : '0';
+                    descText.value      = store.description ? store.description.value : '';
+                    tempInput.value     = store.temperature ? store.temperature.value : '';
+                    humInput.value      = store.relativeHumidity ? store.relativeHumidity.value : '';
+                    openModal();
+                })
+                .catch(err => { console.error('Error fetching store for edit:', err); });
+        };
+
+        window.deleteStore = function (storeId) {
+            if (!confirm('Are you sure you want to delete this store?')) return;
+            fetch('/api/stores/' + encodeURIComponent(storeId), { method: 'DELETE' })
+                .then(r => {
+                    if (!r.ok) throw new Error('Delete failed');
+                    loadStores();
+                })
+                .catch(err => { console.error('Error deleting store:', err); });
+        };
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            errorEl.textContent = '';
+
+            const name     = nameInput.value.trim();
+            const tel      = telInput.value.trim();
+            const urlVal   = urlInput.value.trim();
+            const imgVal   = imgInput.value.trim();
+            const country  = countrySel.value;
+            const capacity = parseInt(capInput.value, 10);
+            const desc     = descText.value.trim();
+
+            if (!name || !tel || !urlVal || !imgVal || isNaN(capacity) || !desc) {
+                errorEl.textContent = 'Please fill all required fields correctly.';
+                return;
+            }
+            if (country.length !== 2) {
+                errorEl.textContent = 'Country Code must be 2 characters.';
+                return;
+            }
+
+            const storeId = idInput.value;
+            const isEdit  = Boolean(storeId);
+
+            const body = isEdit ? {
+                name:        { type: 'String', value: name },
+                telephone:   { type: 'String', value: tel },
+                url:         { type: 'String', value: urlVal },
+                image:       { type: 'String', value: imgVal },
+                countryCode: { type: 'String', value: country },
+                capacity:    { type: 'Number', value: capacity },
+                description: { type: 'String', value: desc }
+            } : {
+                name, telephone: tel, url: urlVal, image: imgVal,
+                countryCode: country, capacity, description: desc
+            };
+
+            const apiUrl = isEdit ? '/api/stores/' + encodeURIComponent(storeId) : '/api/stores';
+            const method = isEdit ? 'PATCH' : 'POST';
+
+            fetch(apiUrl, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            })
+            .then(r => {
+                if (!r.ok) return r.text().then(t => { throw new Error(t); });
+                closeModal();
+                loadStores();
+            })
+            .catch(err => {
+                errorEl.textContent = 'Error saving store: ' + err.message;
+            });
+        });
     }
 
     async function loadProducts() {
@@ -305,13 +438,152 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td><i class="${categoryIcon(category)}"></i> ${category}</td>
                     <td>${skillHtml || '<span style="color:#aaa;">No skills</span>'}</td>
                     <td>${storeName}</td>
-                    <td><button onclick="deleteEmployee('${emp.id}')">Delete</button></td>
+                    <td>
+                        <button onclick="editEmployee('${emp.id}')">Edit</button>
+                        <button onclick="deleteEmployee('${emp.id}')">Delete</button>
+                    </td>
                 `;
                 tbody.appendChild(row);
             });
         } catch (err) {
             console.error('Error loading employees:', err);
         }
+    }
+
+    function initEmployeeModal() {
+        const modal        = document.getElementById('employee-modal');
+        const form         = document.getElementById('employee-form');
+        const titleEl      = document.getElementById('employee-modal-title');
+        const idInput      = document.getElementById('employee-form-id');
+        const nameInput    = document.getElementById('employee-form-name');
+        const userInput    = document.getElementById('employee-form-username');
+        const emailInput   = document.getElementById('employee-form-email');
+        const passInput    = document.getElementById('employee-form-password');
+        const dateInput    = document.getElementById('employee-form-dateOfContract');
+        const catSelect    = document.getElementById('employee-form-category');
+        const storeSelect  = document.getElementById('employee-form-refStore');
+        const imgInput     = document.getElementById('employee-form-image');
+        const errorEl      = document.getElementById('employee-form-error');
+        const addBtn       = document.getElementById('add-employee-btn');
+        const cancelBtn    = document.getElementById('employee-form-cancel');
+
+        if (!modal || !addBtn) return;
+
+        function openModal()  { modal.removeAttribute('hidden'); }
+        function closeModal() { modal.setAttribute('hidden', ''); errorEl.textContent = ''; }
+
+        async function populateStores(selectedId = '') {
+            try {
+                const stores = await fetch('/api/stores').then(r => r.json());
+                storeSelect.innerHTML = '<option value="">Select a store...</option>';
+                stores.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = s.name.value;
+                    if (s.id === selectedId) opt.selected = true;
+                    storeSelect.appendChild(opt);
+                });
+            } catch (err) { console.error('Error fetching stores for modal:', err); }
+        }
+
+        addBtn.addEventListener('click', async function () {
+            titleEl.textContent = 'Add Employee';
+            form.reset();
+            idInput.value = '';
+            await populateStores();
+            openModal();
+        });
+
+        cancelBtn.addEventListener('click', closeModal);
+
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) closeModal();
+        });
+
+        window.editEmployee = async function (empId) {
+            try {
+                const emp = await fetch('/api/employees/' + encodeURIComponent(empId)).then(r => r.json());
+                titleEl.textContent = 'Edit Employee';
+                idInput.value       = emp.id;
+                nameInput.value     = emp.name ? emp.name.value : '';
+                userInput.value     = emp.username ? emp.username.value : '';
+                emailInput.value    = emp.email ? emp.email.value : '';
+                passInput.value     = emp.password ? emp.password.value : ''; // Note: usually shouldn't inhabit form
+                dateInput.value     = emp.dateOfContract ? emp.dateOfContract.value : '';
+                catSelect.value     = emp.category ? emp.category.value : 'Operator';
+                imgInput.value      = emp.image ? emp.image.value : '';
+
+                // Skills checkboxes
+                const currentSkills = (emp.skills && Array.isArray(emp.skills.value)) ? emp.skills.value : [];
+                document.querySelectorAll('input[name="skills"]').forEach(cb => {
+                    cb.checked = currentSkills.includes(cb.value);
+                });
+
+                await populateStores(emp.refStore ? emp.refStore.value : '');
+                openModal();
+            } catch (err) { console.error('Error fetching employee for edit:', err); }
+        };
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            errorEl.textContent = '';
+
+            const name     = nameInput.value.trim();
+            const username = userInput.value.trim();
+            const email    = emailInput.value.trim();
+            const pass     = passInput.value.trim();
+            const date     = dateInput.value;
+            const cat      = catSelect.value;
+            const store    = storeSelect.value;
+            const img      = imgInput.value.trim();
+            
+            const skills = Array.from(document.querySelectorAll('input[name="skills"]:checked')).map(cb => cb.value);
+
+            // Validation
+            if (!name || !username || !email || !pass || !date || !cat || !store || !img) {
+                errorEl.textContent = 'Please fill all required fields.';
+                return;
+            }
+            if (skills.length === 0) {
+                errorEl.textContent = 'Please select at least one skill.';
+                return;
+            }
+
+            const empId = idInput.value;
+            const isEdit = Boolean(empId);
+
+            const body = isEdit ? {
+                name:           { type: 'String', value: name },
+                username:       { type: 'String', value: username },
+                email:          { type: 'String', value: email },
+                password:       { type: 'String', value: pass },
+                dateOfContract: { type: 'String', value: date },
+                category:       { type: 'String', value: cat },
+                refStore:       { type: 'Relationship', value: store },
+                skills:         { type: 'Array', value: skills },
+                image:          { type: 'String', value: img }
+            } : {
+                name, username, email, password: pass, dateOfContract: date,
+                category: cat, refStore: store, skills, image: img
+            };
+
+            const apiUrl = isEdit ? '/api/employees/' + encodeURIComponent(empId) : '/api/employees';
+            const method = isEdit ? 'PATCH' : 'POST';
+
+            fetch(apiUrl, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            })
+            .then(r => {
+                if (!r.ok) return r.text().then(t => { throw new Error(t); });
+                closeModal();
+                loadEmployees();
+            })
+            .catch(err => {
+                errorEl.textContent = 'Error saving employee: ' + err.message;
+            });
+        });
     }
 
     async function deleteProduct(productId) {
@@ -484,24 +756,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('tweets-content').innerHTML = store.tweets.value.map(tweet => `<p>${tweet}</p>`).join('');
             }
             initMap(store.address ? store.address.value : 'Unknown');
-            init3D(storeId);
+            try { init3D(storeId); } catch(e) { console.warn('3D init failed', e); }
             loadInventory(storeId);
             // Add shelf button
             document.getElementById('add-shelf-btn').onclick = () => {
-                const name = prompt('Shelf name:');
-                const level = prompt('Level:');
-                if (name && level) {
-                    fetch('/api/shelves', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            storeId: `urn:ngsi-ld:Store:${storeId}`,
-                            name: name,
-                            level: parseInt(level),
-                            image: 'https://example.com/shelf.jpg'
-                        })
-                    }).then(() => location.reload());
-                }
+                document.getElementById('shelf-modal-title').textContent = 'Add Shelf';
+                document.getElementById('shelf-form-id').value = '';
+                document.getElementById('shelf-form-storeId').value = `urn:ngsi-ld:Store:${storeId}`;
+                document.getElementById('shelf-form-name').value = '';
+                document.getElementById('shelf-form-level').value = '0';
+                document.getElementById('shelf-form-image').value = '';
+                document.getElementById('shelf-modal').removeAttribute('hidden');
             };
         } catch (err) {
             console.error('Error loading store detail:', err);
@@ -533,30 +798,91 @@ document.addEventListener('DOMContentLoaded', () => {
     function init3D(storeId) {
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, 400 / 400, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer();
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(400, 400);
-        document.getElementById('3d-tour').appendChild(renderer.domElement);
-        const light = new THREE.AmbientLight(0x404040);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        const container = document.getElementById('3d-tour');
+        container.innerHTML = ''; // Clear previous
+        container.appendChild(renderer.domElement);
+
+        const light = new THREE.AmbientLight(0x404040, 1.2);
         scene.add(light);
-        camera.position.z = 5;
+        const pointLight = new THREE.PointLight(0xffffff, 0.8);
+        pointLight.position.set(5, 5, 5);
+        scene.add(pointLight);
+
+        camera.position.set(0, 2, 5);
+        camera.lookAt(0, 0, 0);
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        const interactables = [];
+
         fetch(`/api/shelves?storeId=urn:ngsi-ld:Store:${storeId}`).then(r => r.json()).then(shelves => {
             shelves.forEach((shelf, i) => {
                 const geometry = new THREE.BoxGeometry(1, 0.5, 0.5);
-                const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
+                const material = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
                 const cube = new THREE.Mesh(geometry, material);
-                cube.position.set(i * 1.2 - 2, shelf.level.value * 0.6, 0);
+                cube.position.set(i * 1.5 - (shelves.length * 0.75), shelf.level.value * 0.8, 0);
+                cube.userData = { type: 'shelf', id: shelf.id };
                 scene.add(cube);
-                fetch(`/api/inventoryitems?shelfId=${shelf.id}`).then(r => r.json()).then(items => {
+                interactables.push(cube);
+
+                fetch(`/api/inventoryitems?shelfId=${encodeURIComponent(shelf.id)}`).then(r => r.json()).then(items => {
                     items.forEach((item, j) => {
                         const smallGeo = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-                        const smallMat = new THREE.MeshBasicMaterial({color: 0xff0000});
+                        const smallMat = new THREE.MeshPhongMaterial({ color: 0xff0000 });
                         const smallCube = new THREE.Mesh(smallGeo, smallMat);
-                        smallCube.position.set(i * 1.2 - 2 + j * 0.3, shelf.level.value * 0.6, 0);
-                        scene.add(smallCube);
+                        smallCube.position.set(j * 0.25 - 0.35, 0.35, 0);
+                        smallCube.userData = { 
+                            type: 'product', 
+                            name: item.productId.value.split(':').pop(), 
+                            stock: item.stockCount.value 
+                        };
+                        cube.add(smallCube);
+                        interactables.push(smallCube);
                     });
                 });
             });
         });
+
+        const tooltip = document.createElement('div');
+        tooltip.style.position = 'absolute';
+        tooltip.style.background = 'rgba(0,0,0,0.8)';
+        tooltip.style.color = 'white';
+        tooltip.style.padding = '5px';
+        tooltip.style.borderRadius = '4px';
+        tooltip.style.fontSize = '12px';
+        tooltip.style.display = 'none';
+        tooltip.style.pointerEvents = 'none';
+        tooltip.style.zIndex = '10000';
+        document.body.appendChild(tooltip);
+
+        container.addEventListener('click', (event) => {
+            const rect = container.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(interactables);
+
+            if (intersects.length > 0) {
+                const obj = intersects[0].object;
+                if (obj.userData.type === 'shelf') {
+                    const sectionId = `shelf-section-${obj.userData.id}`;
+                    const el = document.getElementById(sectionId);
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                } else if (obj.userData.type === 'product') {
+                    tooltip.innerHTML = `<strong>${obj.userData.name}</strong><br>Stock: ${obj.userData.stock}`;
+                    tooltip.style.left = event.pageX + 10 + 'px';
+                    tooltip.style.top = event.pageY + 10 + 'px';
+                    tooltip.style.display = 'block';
+                    setTimeout(() => { tooltip.style.display = 'none'; }, 2000);
+                }
+            }
+        });
+
         function animate() {
             requestAnimationFrame(animate);
             renderer.render(scene, camera);
@@ -578,14 +904,14 @@ document.addEventListener('DOMContentLoaded', () => {
             content.innerHTML = '';
             for (const shelfId in byShelf) {
                 const shelfItems = byShelf[shelfId];
-                const shelfKey = shelfId.split(':')[3] || shelfId.split(':')[2] || shelfId;
-                const shelfRes = await fetch(`/api/shelves/${encodeURIComponent(shelfKey)}`);
+                const shelfRes = await fetch(`/api/shelves/${encodeURIComponent(shelfId)}`);
                 const shelf = await shelfRes.json();
                 const totalShelfCount = shelfItems.reduce((sum, item) => sum + item.shelfCount.value, 0);
                 const maxCapacity = 100;
                 const fillPercent = Math.min((totalShelfCount / maxCapacity) * 100, 100);
                 const color = fillPercent < 25 ? 'red' : fillPercent <= 75 ? 'yellow' : 'green';
                 const div = document.createElement('div');
+                div.id = `shelf-section-${shelfId}`;
                 const title = document.createElement('h4');
                 title.innerHTML = `${shelf.name.value} <button onclick="editShelf('${shelfId}')">Edit</button> <button onclick="addProductToShelf('${shelfId}')">Add Product</button>`;
                 div.appendChild(title);
@@ -606,11 +932,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tbody = document.createElement('tbody');
 
                 for (const item of shelfItems) {
-                    const prodKey = item.productId.value.split(':')[3] || item.productId.value.split(':')[2] || item.productId.value;
-                    const prodRes = await fetch(`/api/products/${encodeURIComponent(prodKey)}`);
+                    const prodRes = await fetch(`/api/products/${encodeURIComponent(item.productId.value)}`);
                     const product = await prodRes.json();
-                    const dataProductId = item.productId.value.split(':')[3] || item.productId.value.split(':')[2] || item.productId.value;
-                    const dataInventoryId = item.id.split(':')[3] || item.id.split(':')[2] || item.id;
+                    const dataProductId = item.productId.value;
+                    const dataInventoryId = item.id;
 
                     const row = document.createElement('tr');
                     const imageCell = document.createElement('td');
@@ -675,7 +1000,86 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function editShelf(id) { alert('Edit shelf not implemented'); }
+    function initShelfModal() {
+        const modal = document.getElementById('shelf-modal');
+        const form = document.getElementById('shelf-form');
+        const cancelBtn = document.getElementById('shelf-form-cancel');
+        const errorEl = document.getElementById('shelf-form-error');
+
+        if (!modal || !form) return;
+
+        function closeModal() {
+            modal.setAttribute('hidden', '');
+            errorEl.textContent = '';
+        }
+
+        cancelBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeModal();
+        });
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            errorEl.textContent = '';
+
+            const id = document.getElementById('shelf-form-id').value;
+            const storeId = document.getElementById('shelf-form-storeId').value;
+            const name = document.getElementById('shelf-form-name').value.trim();
+            const level = parseInt(document.getElementById('shelf-form-level').value, 10);
+            const image = document.getElementById('shelf-form-image').value.trim();
+
+            if (!name || isNaN(level) || level < 0) {
+                errorEl.textContent = 'Please provide a valid name and level.';
+                return;
+            }
+
+            const isEdit = Boolean(id);
+            const body = isEdit ? {
+                name: { type: 'String', value: name },
+                level: { type: 'Number', value: level },
+                image: { type: 'String', value: image }
+            } : {
+                storeId,
+                name,
+                level,
+                image
+            };
+
+            const apiUrl = isEdit ? `/api/shelves/${encodeURIComponent(id)}` : '/api/shelves';
+            const method = isEdit ? 'PATCH' : 'POST';
+
+            fetch(apiUrl, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            })
+            .then(r => {
+                if (!r.ok) return r.text().then(t => { throw new Error(t); });
+                closeModal();
+                location.reload();
+            })
+            .catch(err => {
+                errorEl.textContent = 'Error saving shelf: ' + err.message;
+            });
+        });
+    }
+
+    window.editShelf = async function(shelfId) {
+        try {
+            const shelf = await fetch(`/api/shelves/${encodeURIComponent(shelfId)}`).then(r => r.json());
+            const modal = document.getElementById('shelf-modal');
+            if (!modal) return;
+            document.getElementById('shelf-modal-title').textContent = 'Edit Shelf';
+            document.getElementById('shelf-form-id').value = shelf.id;
+            document.getElementById('shelf-form-storeId').value = shelf.storeId ? shelf.storeId.value : '';
+            document.getElementById('shelf-form-name').value = shelf.name ? shelf.name.value : '';
+            document.getElementById('shelf-form-level').value = shelf.level ? shelf.level.value : '0';
+            document.getElementById('shelf-form-image').value = shelf.image ? shelf.image.value : '';
+            modal.removeAttribute('hidden');
+        } catch (err) {
+            console.error('Error fetching shelf for edit:', err);
+        }
+    };
 
     function addProductToShelf(shelfId) {
         fetch('/api/products').then(r => r.json()).then(products => {

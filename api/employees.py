@@ -17,18 +17,26 @@ def create_employee():
     current_app.orion.create_entity(payload)
     return jsonify({'status': 'created', 'id': entity_id}), 201
 
+def normalize_employee_entity_id(entity_id):
+    if not entity_id.startswith('urn:ngsi-ld:'):
+        return f'urn:ngsi-ld:Employee:{entity_id}'
+    return entity_id
+
 @employees_bp.route('/<entity_id>', methods=['GET'])
 def get_employee(entity_id):
+    entity_id = normalize_employee_entity_id(entity_id)
     employee = current_app.orion.get_entity(entity_id)
     return jsonify(employee)
 
 @employees_bp.route('/<entity_id>', methods=['PATCH'])
 def update_employee(entity_id):
+    entity_id = normalize_employee_entity_id(entity_id)
     attrs = request.get_json() or {}
     current_app.orion.update_entity(entity_id, attrs)
     return jsonify({'status': 'updated'})
 
 @employees_bp.route('/<entity_id>', methods=['DELETE'])
 def delete_employee(entity_id):
+    entity_id = normalize_employee_entity_id(entity_id)
     current_app.orion.delete_entity(entity_id)
     return jsonify({'status': 'deleted'})
