@@ -10,6 +10,7 @@
 - [x] Employee list view with icons implemented
 - [x] Product detail view with inventory grouped by store/shelf and add-to-shelf functionality
 - [x] Active nav link highlighting in navbar
+- [x] Stores Map view at /stores-map
 - [x] Shelf name resolution from IDs
 
 ## 1. UML Entity Diagram

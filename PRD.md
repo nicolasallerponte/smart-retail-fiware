@@ -14,6 +14,7 @@
 - [x] Employee list view with icons and delete buttons
 - [x] Product detail view with inventory grouped by store/shelf and add-to-shelf functionality
 - [x] Active nav link highlighting in navbar
+- [x] Stores Map view at /stores-map
 
 
 ## 1. Overview
@@ -257,7 +258,7 @@
 - Products icon → Products list
 - Stores icon → Stores list
 - Employees icon → Employees list
-- Map icon → Stores Map tab
+- Map icon → /stores-map (Leaflet map overview) [x]
 - Language selector (EN / ES)
 - Dark/Light mode toggle
 - Active section highlighting [x]

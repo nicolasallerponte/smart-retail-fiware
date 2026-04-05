@@ -14,6 +14,7 @@
 - [x] Employee list view with icons and delete buttons
 - [x] Product detail view with inventory grouped by store/shelf and add-to-shelf functionality
 - [x] Active nav link highlighting in navbar
+- [x] Stores Map view at /stores-map
 
 
 ## 1. System Overview
@@ -215,7 +216,7 @@ index.html
 │   └── detail.html (store detail with map, 3D, inventory)
 ├── employees/
 │   └── list.html (employee table with icons, zoom hover)
-├── stores-map.html (Leaflet map overview)
+├── stores-map.html (Leaflet map overview) [x]
 └── notifications-panel.html (overlay with real-time alerts)
 ```
 

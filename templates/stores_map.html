@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block content %}
+<section>
+  <h1>Stores Map</h1>
+  <div id="stores-map-container"></div>
+</section>
+
+<script>
+  (function () {
+    // Initialise Leaflet map — container already has fixed height from style.css
+    const map = L.map('stores-map-container').setView([48, 10], 4);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Fetch all stores then geocode and place markers
+    fetch('/api/stores')
+      .then(function (r) { return r.json(); })
+      .then(function (stores) {
+        stores.forEach(function (store, index) {
+          const address = store.address ? store.address.value : null;
+          if (!address) return;
+
+          // Throttle Nominatim requests: 300 ms per store (well within 1 req/s)
+          setTimeout(function () {
+            fetch(
+              'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' +
+              encodeURIComponent(address)
+            )
+              .then(function (r) { return r.json(); })
+              .then(function (geo) {
+                if (!geo || geo.length === 0) return;
+
+                const lat = parseFloat(geo[0].lat);
+                const lng = parseFloat(geo[0].lon);
+                const storeKey = store.id.split(':')[3] || store.id;
+
+                // Build popup HTML from existing store attributes
+                const name    = store.name ? store.name.value : 'Unknown';
+                const country = store.countryCode ? store.countryCode.value : 'N/A';
+                const temp    = store.temperature ? store.temperature.value + '°C' : 'N/A';
+                const hum     = store.relativeHumidity ? store.relativeHumidity.value + '%' : 'N/A';
+                const img     = store.image ? store.image.value : '';
+
+                const popupHtml =
+                  '<div style="text-align:center;min-width:160px">' +
+                    (img ? '<img src="' + img + '" alt="' + name + '" width="140" style="border-radius:6px;margin-bottom:6px"><br>' : '') +
+                    '<strong>' + name + '</strong><br>' +
+                    '<span>' + country + '</span><br>' +
+                    '<span><i class="fas fa-thermometer-half"></i> ' + temp + '</span>&nbsp;' +
+                    '<span><i class="fas fa-tint"></i> ' + hum + '</span>' +
+                  '</div>';
+
+                const marker = L.marker([lat, lng]).addTo(map);
+                marker.bindPopup(popupHtml);
+
+                // Show popup on hover, navigate on click
+                marker.on('mouseover', function () { marker.openPopup(); });
+                marker.on('mouseout',  function () { marker.closePopup(); });
+                marker.on('click',     function () {
+                  window.location.href = '/stores/' + storeKey;
+                });
+              })
+              .catch(function (err) {
+                console.warn('Geocoding failed for store ' + store.id + ':', err);
+              });
+          }, index * 300);
+        });
+      })
+      .catch(function (err) {
+        console.error('Failed to load stores:', err);
+      });
+  }());
+</script>
+{% endblock %}

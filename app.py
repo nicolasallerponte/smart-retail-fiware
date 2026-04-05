@@ -113,6 +113,10 @@ def create_app():
     def employees_page():
         return render_template('employees.html')
 
+    @app.route('/stores-map')
+    def stores_map_page():
+        return render_template('stores_map.html')
+
     @app.route('/orion/notifications', methods=['POST'])
     def handle_notification():
         data = request.get_json()
