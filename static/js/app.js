@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (pathname.startsWith('/stores/')) {
         const storeId = pathname.split('/')[2];
         loadStoreDetail(storeId);
+        initShelfModal();
     } else if (pathname === '/products') {
         loadProducts();
         initProductModal();
@@ -759,20 +760,13 @@ document.addEventListener('DOMContentLoaded', () => {
             loadInventory(storeId);
             // Add shelf button
             document.getElementById('add-shelf-btn').onclick = () => {
-                const name = prompt('Shelf name:');
-                const level = prompt('Level:');
-                if (name && level) {
-                    fetch('/api/shelves', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            storeId: `urn:ngsi-ld:Store:${storeId}`,
-                            name: name,
-                            level: parseInt(level),
-                            image: 'https://example.com/shelf.jpg'
-                        })
-                    }).then(() => location.reload());
-                }
+                document.getElementById('shelf-modal-title').textContent = 'Add Shelf';
+                document.getElementById('shelf-form-id').value = '';
+                document.getElementById('shelf-form-storeId').value = `urn:ngsi-ld:Store:${storeId}`;
+                document.getElementById('shelf-form-name').value = '';
+                document.getElementById('shelf-form-level').value = '0';
+                document.getElementById('shelf-form-image').value = '';
+                document.getElementById('shelf-modal').removeAttribute('hidden');
             };
         } catch (err) {
             console.error('Error loading store detail:', err);
@@ -946,7 +940,86 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function editShelf(id) { alert('Edit shelf not implemented'); }
+    function initShelfModal() {
+        const modal = document.getElementById('shelf-modal');
+        const form = document.getElementById('shelf-form');
+        const cancelBtn = document.getElementById('shelf-form-cancel');
+        const errorEl = document.getElementById('shelf-form-error');
+
+        if (!modal || !form) return;
+
+        function closeModal() {
+            modal.setAttribute('hidden', '');
+            errorEl.textContent = '';
+        }
+
+        cancelBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeModal();
+        });
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            errorEl.textContent = '';
+
+            const id = document.getElementById('shelf-form-id').value;
+            const storeId = document.getElementById('shelf-form-storeId').value;
+            const name = document.getElementById('shelf-form-name').value.trim();
+            const level = parseInt(document.getElementById('shelf-form-level').value, 10);
+            const image = document.getElementById('shelf-form-image').value.trim();
+
+            if (!name || isNaN(level) || level < 0) {
+                errorEl.textContent = 'Please provide a valid name and level.';
+                return;
+            }
+
+            const isEdit = Boolean(id);
+            const body = isEdit ? {
+                name: { type: 'String', value: name },
+                level: { type: 'Number', value: level },
+                image: { type: 'String', value: image }
+            } : {
+                storeId,
+                name,
+                level,
+                image
+            };
+
+            const apiUrl = isEdit ? `/api/shelves/${encodeURIComponent(id)}` : '/api/shelves';
+            const method = isEdit ? 'PATCH' : 'POST';
+
+            fetch(apiUrl, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            })
+            .then(r => {
+                if (!r.ok) return r.text().then(t => { throw new Error(t); });
+                closeModal();
+                location.reload();
+            })
+            .catch(err => {
+                errorEl.textContent = 'Error saving shelf: ' + err.message;
+            });
+        });
+    }
+
+    window.editShelf = async function(shelfId) {
+        try {
+            const shelf = await fetch(`/api/shelves/${encodeURIComponent(shelfId)}`).then(r => r.json());
+            const modal = document.getElementById('shelf-modal');
+            if (!modal) return;
+            document.getElementById('shelf-modal-title').textContent = 'Edit Shelf';
+            document.getElementById('shelf-form-id').value = shelf.id;
+            document.getElementById('shelf-form-storeId').value = shelf.storeId ? shelf.storeId.value : '';
+            document.getElementById('shelf-form-name').value = shelf.name ? shelf.name.value : '';
+            document.getElementById('shelf-form-level').value = shelf.level ? shelf.level.value : '0';
+            document.getElementById('shelf-form-image').value = shelf.image ? shelf.image.value : '';
+            modal.removeAttribute('hidden');
+        } catch (err) {
+            console.error('Error fetching shelf for edit:', err);
+        }
+    };
 
     function addProductToShelf(shelfId) {
         fetch('/api/products').then(r => r.json()).then(products => {
