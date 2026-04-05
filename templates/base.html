@@ -20,11 +20,11 @@
 <body>
 <header class="navbar">
     <div class="navbar-left">
-        <a href="/" class="nav-logo">Smart Retail FIWARE</a>
-        <a href="/products" class="nav-link">Products</a>
-        <a href="/stores" class="nav-link">Stores</a>
-        <a href="/employees" class="nav-link">Employees</a>
-        <a href="/stores-map" class="nav-link">Stores Map</a>
+        <a href="/" class="nav-logo" data-i18n="nav.logo">Smart Retail FIWARE</a>
+        <a href="/products" class="nav-link" data-i18n="nav.products">Products</a>
+        <a href="/stores" class="nav-link" data-i18n="nav.stores">Stores</a>
+        <a href="/employees" class="nav-link" data-i18n="nav.employees">Employees</a>
+        <a href="/stores-map" class="nav-link" data-i18n="nav.map">Stores Map</a>
     </div>
     <div class="navbar-right">
         <label class="toggleswitch">🌙
@@ -39,6 +39,6 @@
 </header>
 <main class="content">{% block content %}{% endblock %}</main>
 {% block modals %}{% endblock %}
-<footer class="footer">© 2026 Smart Retail FIWARE</footer>
+<footer class="footer" data-i18n="nav.footer">© 2026 Smart Retail FIWARE</footer>
 </body>
 </html>

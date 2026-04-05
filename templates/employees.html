@@ -1,26 +1,26 @@
 {% extends 'base.html' %}
 {% block content %}
 <section>
-  <h1>Employees</h1>
+  <h1 data-i18n="pages.employees.title">Employees</h1>
 
-  <button id="add-employee-btn">Add Employee</button>
+  <button id="add-employee-btn" data-i18n="pages.employees.add">Add Employee</button>
 
   <div id="employee-list-wrapper">
     <table id="employees-table">
       <thead>
         <tr>
-          <th>Photo</th>
-          <th>Name</th>
-          <th>Category</th>
-          <th>Skills</th>
-          <th>Store</th>
-          <th>Actions</th>
+          <th data-i18n="table.photo">Photo</th>
+          <th data-i18n="table.name">Name</th>
+          <th data-i18n="table.category">Category</th>
+          <th data-i18n="table.skills">Skills</th>
+          <th data-i18n="table.store">Store</th>
+          <th data-i18n="table.actions">Actions</th>
         </tr>
       </thead>
       <tbody id="employees-tbody"></tbody>
     </table>
   </div>
-  <div id="status">Employees loaded on API calls</div>
+  <div id="status" data-i18n="table.status_employees">Employees loaded on API calls</div>
 </section>
 {% endblock %}
 
@@ -28,37 +28,37 @@
 <!-- Employee Add/Edit Modal -->
 <div id="employee-modal" class="modal-overlay" hidden>
   <div class="modal-content" style="max-width: 500px;">
-    <h2 id="employee-modal-title">Add Employee</h2>
+    <h2 id="employee-modal-title" data-i18n="modals.add_employee">Add Employee</h2>
     <form id="employee-form" novalidate>
       <input type="hidden" id="employee-form-id" />
       
       <div class="form-group">
-        <label for="employee-form-name">Name</label>
-        <input type="text" id="employee-form-name" placeholder="e.g. John Doe" required />
+        <label for="employee-form-name" data-i18n="forms.name">Name</label>
+        <input type="text" id="employee-form-name" data-i18n="forms.name" placeholder="e.g. John Doe" required />
       </div>
       
       <div class="form-group">
-        <label for="employee-form-username">Username</label>
-        <input type="text" id="employee-form-username" placeholder="e.g. jdoe" required />
+        <label for="employee-form-username" data-i18n="forms.username">Username</label>
+        <input type="text" id="employee-form-username" data-i18n="forms.username" placeholder="e.g. jdoe" required />
       </div>
       
       <div class="form-group">
-        <label for="employee-form-email">Email</label>
-        <input type="email" id="employee-form-email" placeholder="e.g. jdoe@example.com" required />
+        <label for="employee-form-email" data-i18n="forms.email">Email</label>
+        <input type="email" id="employee-form-email" data-i18n="forms.email" placeholder="e.g. jdoe@example.com" required />
       </div>
 
       <div class="form-group">
-        <label for="employee-form-password">Password</label>
-        <input type="password" id="employee-form-password" required />
+        <label for="employee-form-password" data-i18n="forms.password">Password</label>
+        <input type="password" id="employee-form-password" data-i18n="forms.password" required />
       </div>
 
       <div class="form-group">
-        <label for="employee-form-dateOfContract">Date of Contract</label>
+        <label for="employee-form-dateOfContract" data-i18n="forms.date_contract">Date of Contract</label>
         <input type="date" id="employee-form-dateOfContract" required />
       </div>
       
       <div class="form-group">
-        <label for="employee-form-category">Category</label>
+        <label for="employee-form-category" data-i18n="table.category">Category</label>
         <select id="employee-form-category" required>
           <option value="Manager">Manager</option>
           <option value="Supervisor">Supervisor</option>
@@ -67,31 +67,31 @@
       </div>
 
       <div class="form-group">
-        <label for="employee-form-refStore">Store</label>
+        <label for="employee-form-refStore" data-i18n="forms.store">Store</label>
         <select id="employee-form-refStore" required>
-          <option value="">Select a store...</option>
+          <option value="" data-i18n="forms.select_store">Select a store...</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label>Skills</label>
+        <label data-i18n="forms.skills">Skills</label>
         <div class="checkbox-group" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:5px;">
-          <label style="font-size:0.8rem;"><input type="checkbox" name="skills" value="MachineryDriving"> Mach. Driving</label>
-          <label style="font-size:0.8rem;"><input type="checkbox" name="skills" value="WritingReports"> Writing Reports</label>
-          <label style="font-size:0.8rem;"><input type="checkbox" name="skills" value="CustomerRelationships"> Cust. Relations</label>
+          <label style="font-size:0.8rem;"><input type="checkbox" name="skills" value="MachineryDriving"> <span data-i18n="forms.skill_machinery">Mach. Driving</span></label>
+          <label style="font-size:0.8rem;"><input type="checkbox" name="skills" value="WritingReports"> <span data-i18n="forms.skill_reports">Writing Reports</span></label>
+          <label style="font-size:0.8rem;"><input type="checkbox" name="skills" value="CustomerRelationships"> <span data-i18n="forms.skill_relations">Cust. Relations</span></label>
         </div>
       </div>
       
       <div class="form-group">
-        <label for="employee-form-image">Image URL</label>
-        <input type="url" id="employee-form-image" placeholder="https://example.com/photo.jpg" required />
+        <label for="employee-form-image" data-i18n="forms.image_url">Image URL</label>
+        <input type="url" id="employee-form-image" data-i18n="forms.image_url" placeholder="https://example.com/photo.jpg" required />
       </div>
 
       <div id="employee-form-error" class="form-error"></div>
       
       <div class="form-actions">
-        <button type="button" id="employee-form-cancel">Cancel</button>
-        <button type="submit" id="employee-form-submit">Save</button>
+        <button type="button" id="employee-form-cancel" data-i18n="common.cancel">Cancel</button>
+        <button type="submit" id="employee-form-submit" data-i18n="common.save">Save</button>
       </div>
     </form>
   </div>
