@@ -16,9 +16,10 @@
 - [x] Product detail view with inventory grouped by store/shelf and add-to-shelf functionality
 - [x] Active nav link highlighting in navbar
 - [x] Stores Map view at /stores-map
-- [x] Product Add/Edit modal form with validation
-- [x] Store Add/Edit modal form with validation
-- [x] Employee Add/Edit modal form with validation
+- [x] Employee Add/Edit modal form with JS validation and PATCH/POST API
+- [x] Shelf Add/Edit modal form with PATCH/POST API
+- [x] Client-side i18n system with translation dictionary and data-i18n tagging
+- [x] Client-side EN/ES i18n system implemented with instant switching
 
 
 ## 1. Overview
@@ -340,15 +341,14 @@
 
 **Dark/Light Mode:**
 - Toggle button in navbar
-- Preference persisted in localStorage
-- Apply to all pages and elements
-- Ensure sufficient contrast in both modes
+- **Language:** Stored in localStorage, applied via `applyTranslations()` using a `TRANSLATIONS` dictionary
+- **Cached entities:** Optional client-side caching to reduce API calls
 
 **Acceptance Criteria:**
-- [ ] Language toggle changes all visible text
-- [ ] Dark mode toggle changes background colors and text contrast
-- [ ] Language and theme preferences persist across page reloads
-- [ ] All views support both languages and themes
+- [x] Language toggle changes all visible text
+- [x] Dark mode toggle changes background colors and text contrast
+- [x] Language and theme preferences persist across page reloads
+- [x] All views support both languages and themes
 
 ---
 
