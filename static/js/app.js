@@ -756,7 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('tweets-content').innerHTML = store.tweets.value.map(tweet => `<p>${tweet}</p>`).join('');
             }
             initMap(store.address ? store.address.value : 'Unknown');
-            init3D(storeId);
+            try { init3D(storeId); } catch(e) { console.warn('3D init failed', e); }
             loadInventory(storeId);
             // Add shelf button
             document.getElementById('add-shelf-btn').onclick = () => {
@@ -805,14 +805,6 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = ''; // Clear previous
         container.appendChild(renderer.domElement);
 
-        // CSS2D Labels
-        const labelRenderer = new THREE.CSS2DRenderer();
-        labelRenderer.setSize(400, 400);
-        labelRenderer.style.position = 'absolute';
-        labelRenderer.style.top = '0px';
-        labelRenderer.style.pointerEvents = 'none';
-        container.appendChild(labelRenderer.domElement);
-
         const light = new THREE.AmbientLight(0x404040, 1.2);
         scene.add(light);
         const pointLight = new THREE.PointLight(0xffffff, 0.8);
@@ -836,19 +828,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 cube.userData = { type: 'shelf', id: shelf.id };
                 scene.add(cube);
                 interactables.push(cube);
-
-                // Label
-                const labelDiv = document.createElement('div');
-                labelDiv.className = 'shelf-label';
-                labelDiv.textContent = shelf.name.value;
-                labelDiv.style.color = 'white';
-                labelDiv.style.background = 'rgba(0,0,0,0.6)';
-                labelDiv.style.padding = '2px 5px';
-                labelDiv.style.borderRadius = '3px';
-                labelDiv.style.fontSize = '10px';
-                const label = new THREE.CSS2DObject(labelDiv);
-                label.position.set(0, 0.4, 0);
-                cube.add(label);
 
                 fetch(`/api/inventoryitems?shelfId=${encodeURIComponent(shelf.id)}`).then(r => r.json()).then(items => {
                     items.forEach((item, j) => {
@@ -907,7 +886,6 @@ document.addEventListener('DOMContentLoaded', () => {
         function animate() {
             requestAnimationFrame(animate);
             renderer.render(scene, camera);
-            labelRenderer.render(scene, camera);
         }
         animate();
     }
