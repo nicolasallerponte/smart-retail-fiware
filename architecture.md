@@ -13,6 +13,8 @@
 - [x] Product list view with color squares and delete buttons
 - [x] Employee list view with icons and delete buttons
 - [x] Product detail view with inventory grouped by store/shelf and add-to-shelf functionality
+- [x] Active nav link highlighting in navbar
+
 
 ## 1. System Overview
 
@@ -202,7 +204,8 @@ index.html
 │   ├── Employees
 │   ├── Stores Map
 │   ├── Language selector (EN/ES)
-│   └── Dark/Light toggle
+│   ├── Dark/Light toggle
+│   └── Active section highlighting [x]
 ├── home.html (UML diagram, quick stats)
 ├── products/
 │   ├── list.html (product table with color squares, delete buttons)

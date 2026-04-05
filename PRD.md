@@ -13,6 +13,8 @@
 - [x] Product list view with color squares and delete buttons
 - [x] Employee list view with icons and delete buttons
 - [x] Product detail view with inventory grouped by store/shelf and add-to-shelf functionality
+- [x] Active nav link highlighting in navbar
+
 
 ## 1. Overview
 
@@ -258,7 +260,8 @@
 - Map icon → Stores Map tab
 - Language selector (EN / ES)
 - Dark/Light mode toggle
-- Active section highlighting
+- Active section highlighting [x]
+
 
 **Home Page:**
 - Welcome message with multilingual support

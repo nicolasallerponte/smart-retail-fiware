@@ -8,7 +8,8 @@
 - [x] Model classes created with to_ngsi() methods
 - [x] Product list and detail views implemented
 - [x] Employee list view with icons implemented
-- [x] Inventory grouping by store/shelf in product detail
+- [x] Product detail view with inventory grouped by store/shelf and add-to-shelf functionality
+- [x] Active nav link highlighting in navbar
 - [x] Shelf name resolution from IDs
 
 ## 1. UML Entity Diagram
