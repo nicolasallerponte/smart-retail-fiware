@@ -66,7 +66,7 @@ def create_app():
             app.orion.create_subscription({
                 "description": "Product Price Change Subscription",
                 "subject": {
-                    "entities": [{"type": "Product"}],
+                    "entities": [{"idPattern": ".*", "type": "Product"}],
                     "condition": {"attrs": ["price"]}
                 },
                 "notification": {
@@ -74,16 +74,13 @@ def create_app():
                     "attrs": ["price"]
                 }
             })
-        
+
         if "Low Stock Alert Subscription" not in existing_subs:
             app.orion.create_subscription({
                 "description": "Low Stock Alert Subscription",
                 "subject": {
-                    "entities": [{"type": "InventoryItem"}],
-                    "condition": {
-                        "attrs": ["stockCount"],
-                        "expression": {"q": "stockCount<5"}
-                    }
+                    "entities": [{"idPattern": ".*", "type": "InventoryItem"}],
+                    "condition": {"attrs": ["stockCount"]}
                 },
                 "notification": {
                     "http": {"url": "http://host.docker.internal:5000/orion/notifications"},
@@ -140,7 +137,8 @@ def create_app():
                 stock_count = entity.get('stockCount', {}).get('value')
                 product_id = entity.get('productId', {}).get('value')
                 store_id = entity.get('storeId', {}).get('value')
-                socketio.emit('low_stock', {'inventoryItemId': entity_id, 'stockCount': stock_count, 'productId': product_id, 'storeId': store_id})
+                if stock_count is not None and stock_count < 15:
+                    socketio.emit('low_stock', {'inventoryItemId': entity_id, 'stockCount': stock_count, 'productId': product_id, 'storeId': store_id})
         return '', 200
 
     return app
