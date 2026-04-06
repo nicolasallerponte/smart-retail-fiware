@@ -1,7 +1,7 @@
 # Smart Retail FIWARE 🛍️
 
 **Autores**: Jacobo Cousillas Taboada y Nicolás Aller Ponte  
-**Asignatura**: Gestión de Datos en Entornos Inteligentes — Práctica 2  
+**Asignatura**: Gestión de Datos en Escenarios Inteligentes — Práctica 2  
 **Repositorio**: [github.com/nicolasallerponte/smart-retail-fiware](https://github.com/nicolasallerponte/smart-retail-fiware)
 
 ---
