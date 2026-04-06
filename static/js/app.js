@@ -32,7 +32,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 confirm_delete_employee: "Are you sure you want to delete this employee?",
                 confirm_delete_shelf: "Are you sure you want to delete this shelf?",
                 low_stock_alert: "Low stock alert: Product {prod} in Store {store} has {count} units",
-                invalid_shelf_error: "Please provide a valid name and level."
+                invalid_shelf_error: "Please provide a valid name and level.",
+                no_notifications: "No notifications yet — buy items to trigger low stock alerts."
+            },
+            storeDescriptions: {
+                'Main distribution hub for the Iberian Peninsula, handling bulk storage and last-mile logistics.': 'Main distribution hub for the Iberian Peninsula, handling bulk storage and last-mile logistics.',
+                'High-throughput logistics centre serving Northern Europe with automated sorting systems.': 'High-throughput logistics centre serving Northern Europe with automated sorting systems.',
+                'State-of-the-art distribution point for Central and Eastern European markets.': 'State-of-the-art distribution point for Central and Eastern European markets.',
+                'Mediterranean logistics base with specialised cold-chain capabilities and port access.': 'Mediterranean logistics base with specialised cold-chain capabilities and port access.'
             },
             productNames: {
                 'Industrial Motor': 'Industrial Motor',
@@ -69,7 +76,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 confirm_delete_employee: "¿Estás seguro de que quieres eliminar este empleado?",
                 confirm_delete_shelf: "¿Estás seguro de que quieres eliminar esta estantería?",
                 low_stock_alert: "Alerta de stock bajo: El producto {prod} en la tienda {store} tiene {count} unidades",
-                invalid_shelf_error: "Por favor, introduzca un nombre y un nivel válidos."
+                invalid_shelf_error: "Por favor, introduzca un nombre y un nivel válidos.",
+                no_notifications: "Sin notificaciones — compra productos para activar alertas de stock bajo."
+            },
+            storeDescriptions: {
+                'Main distribution hub for the Iberian Peninsula, handling bulk storage and last-mile logistics.': 'Principal centro de distribución para la Península Ibérica, con almacenaje masivo y logística de última milla.',
+                'High-throughput logistics centre serving Northern Europe with automated sorting systems.': 'Centro logístico de alto rendimiento al servicio del norte de Europa con sistemas de clasificación automatizados.',
+                'State-of-the-art distribution point for Central and Eastern European markets.': 'Punto de distribución de última generación para los mercados de Europa Central y del Este.',
+                'Mediterranean logistics base with specialised cold-chain capabilities and port access.': 'Base logística mediterránea con capacidades especializadas de cadena de frío y acceso portuario.'
             },
             productNames: {
                 'Industrial Motor': 'Motor Industrial',
@@ -101,10 +115,20 @@ document.addEventListener('DOMContentLoaded', () => {
         return (TRANSLATIONS[lang].productNames && TRANSLATIONS[lang].productNames[name]) || name;
     };
 
+    window.tStoreDesc = function(desc) {
+        const lang = localStorage.getItem('lang') || 'en';
+        return (TRANSLATIONS[lang].storeDescriptions && TRANSLATIONS[lang].storeDescriptions[desc]) || desc;
+    };
+
     window.tSize = function(size) {
         const lang = localStorage.getItem('lang') || 'en';
         return (TRANSLATIONS[lang].sizes && TRANSLATIONS[lang].sizes[size]) || size;
     };
+
+    // Color is stored in Orion WITHOUT '#' to avoid forbidden-char rejection.
+    // Always use these helpers instead of product.color.value directly.
+    function colorCss(raw) { return raw ? (raw.startsWith('#') ? raw : '#' + raw) : '#888888'; }
+    function colorForOrion(css) { return css.replace('#', ''); }
 
     function setTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
@@ -369,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td><a href="/products/${productKey}">${window.tProduct(product.name.value)}</a></td>
                     <td>€${product.price.value}</td>
                     <td>${window.tSize(product.size.value)}</td>
-                    <td><span class="color-box" style="background:${product.color.value}; width: 16px; height: 16px; display:inline-block; border: 1px solid #000;"></span></td>
+                    <td><span class="color-box" style="background:${colorCss(product.color.value)}; width: 16px; height: 16px; display:inline-block; border: 1px solid #000;"></span></td>
                     <td>
                         <button class="btn-edit" onclick="editProduct('${product.id}')"><i class="fas fa-pen"></i> ${window.t('common.edit')}</button>
                         <button class="btn-delete" onclick="deleteProduct('${product.id}')"><i class="fas fa-trash"></i> ${window.t('common.delete')}</button>
@@ -431,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     nameInput.value      = product.name  ? product.name.value  : '';
                     priceInput.value     = product.price ? product.price.value : '';
                     sizeSelect.value     = product.size  ? product.size.value  : 'Medium';
-                    colorInput.value     = product.color ? product.color.value : '#000000';
+                    colorInput.value     = product.color ? colorCss(product.color.value) : '#000000';
                     imageInput.value     = product.image ? product.image.value : '';
                     openModal();
                 })
@@ -467,6 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const productId = idInput.value;
             const isEdit    = Boolean(productId);
+            const colorOrion = colorForOrion(color); // strip '#' before sending to Orion
 
             // PATCH sends NGSI-formatted attrs; POST sends plain values (model class builds NGSI)
             const body = isEdit
@@ -474,10 +499,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     name:  { type: 'String', value: name },
                     price: { type: 'Number', value: price },
                     size:  { type: 'String', value: sizeSelect.value },
-                    color: { type: 'String', value: color },
+                    color: { type: 'String', value: colorOrion },
                     image: { type: 'String', value: image }
                   }
-                : { name, price, size: sizeSelect.value, color, image };
+                : { name, price, size: sizeSelect.value, color: colorOrion, image };
 
             const url    = isEdit
                 ? '/api/products/' + encodeURIComponent(productId)
@@ -719,7 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('product-name').textContent = window.tProduct(product.name.value);
             document.getElementById('product-size').textContent = `${window.t('table.size')}: ${window.tSize(product.size.value)}`;
             document.getElementById('product-price').textContent = `${window.t('table.price')}: €${product.price.value}`;
-            document.getElementById('product-color').innerHTML = `<span class="color-box" style="background:${product.color.value}; width: 20px; height: 20px; display:inline-block; border:1px solid #000;"></span> ${product.color.value}`;
+            document.getElementById('product-color').innerHTML = `<span class="color-box" style="background:${colorCss(product.color.value)}; width: 20px; height: 20px; display:inline-block; border:1px solid #000;"></span> ${colorCss(product.color.value)}`;
 
             const inventory = await fetch(`/api/inventoryitems?productId=${encodeURIComponent(`urn:ngsi-ld:Product:${productId}`)}`).then(r => r.json());
             const storeIds = [...new Set(inventory.map(item => item.storeId.value))];
@@ -848,7 +873,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('store-image').src = store.image.value;
             const countryCode = store.countryCode ? store.countryCode.value.toLowerCase() : '';
             document.getElementById('store-name').innerHTML = `${store.name.value} <span class="fi fi-${countryCode}"></span>`;
-            document.getElementById('store-description').textContent = store.description.value;
+            document.getElementById('store-description').textContent = window.tStoreDesc(store.description.value);
             if (store.temperature) {
                 document.getElementById('temperature').innerHTML = `<i class="fas fa-thermometer-half"></i> ${store.temperature.value}°C`;
                 document.getElementById('temperature').style.color = store.temperature.value < 15 ? 'blue' : store.temperature.value <= 25 ? 'green' : 'red';
@@ -1038,7 +1063,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                             try {
                                 const product = await fetch(`/api/products/${encodeURIComponent(item.productId.value)}`).then(r => r.json());
-                                const hexColor = parseInt((product.color ? product.color.value : '#888888').replace('#', ''), 16);
+                                const hexColor = parseInt(colorForOrion(product.color ? product.color.value : '888888'), 16);
                                 const stockH = 0.18 + Math.min(item.stockCount.value / 200, 1) * 0.22;
                                 const boxMat = new THREE.MeshPhongMaterial({ color: hexColor, shininess: 80, specular: 0x333333 });
                                 const box = new THREE.Mesh(new THREE.BoxGeometry(0.35, stockH, 0.35), boxMat);
@@ -1213,7 +1238,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const colorCell = document.createElement('td');
                     const colorBox = document.createElement('span');
                     colorBox.className = 'color-box';
-                    colorBox.style.background = product.color.value;
+                    colorBox.style.background = colorCss(product.color.value);
                     colorBox.style.display = 'inline-block';
                     colorBox.style.width = '16px';
                     colorBox.style.height = '16px';
@@ -1394,18 +1419,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showNotification(message) {
-        // Append to notifications panel if exists, else alert
         const panel = document.getElementById('notifications-list');
         if (panel) {
+            const placeholder = document.getElementById('notifications-placeholder');
+            if (placeholder) placeholder.remove();
             const li = document.createElement('li');
             li.textContent = new Date().toLocaleTimeString() + ': ' + message;
-            panel.appendChild(li);
-            // Keep only last 10
-            while (panel.children.length > 10) {
-                panel.removeChild(panel.firstChild);
-            }
-        } else {
-            alert(message);
+            li.style.cssText = 'padding:6px 0;border-bottom:1px solid var(--border);color:var(--accent-amber,#d97706);';
+            panel.prepend(li);
+            while (panel.children.length > 10) panel.removeChild(panel.lastChild);
         }
     }
 
