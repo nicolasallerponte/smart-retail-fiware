@@ -137,7 +137,7 @@ def create_app():
                 stock_count = entity.get('stockCount', {}).get('value')
                 product_id = entity.get('productId', {}).get('value')
                 store_id = entity.get('storeId', {}).get('value')
-                if stock_count is not None and stock_count < 15:
+                if stock_count is not None and stock_count < 5:
                     socketio.emit('low_stock', {'inventoryItemId': entity_id, 'stockCount': stock_count, 'productId': product_id, 'storeId': store_id})
         return '', 200
 
